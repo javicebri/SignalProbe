@@ -16,7 +16,7 @@ class SigProbe:
 
         # self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
 
-        self.text_title = pn.pane.Markdown("# SigProbe", style={'font-size': '16pt'})
+        self.text_title = pn.pane.Markdown("# SigProbe", styles={'font-size': '16pt'})
 
         # Vars
         self.filter_tab = FilterTab.FilterTab()
