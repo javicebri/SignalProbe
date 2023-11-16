@@ -22,16 +22,18 @@ class FilterTab:
         # Selector widgets
         self.select_ad_widget = pn.widgets.Select(options=ad_list,
                                                   value=ad_list[0],
-                                                  name='Type of signal')
+                                                  name='Type of signal',
+                                                  width=180)
         self.select_ad_widget.param.watch(self.set_select_ad, "value")
         self.select_type_widget = pn.widgets.Select(options=self.filter_list,
                                                     value=self.filter_list[0],
-                                                    name='Type of filter')
+                                                    name='Type of filter',
+                                                    width=180)
 
         self.select_cutoff_units_widget = pn.widgets.Select(options=frequency_units_list,
                                                             value=frequency_units_list[0],
                                                             align="end",
-                                                            width=100)
+                                                            width=60)
         # self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
 
         # Text widgets
@@ -41,10 +43,10 @@ class FilterTab:
         # Input widgets
         self.cutoff_input_widget = pn.widgets.FloatInput(name='Cutoff frequency',
                                                          visible=True,
-                                                         width=150)
+                                                         width=100)
         self.order_input_widget = pn.widgets.IntInput(name='Order',
                                                          visible=True,
-                                                         width=150)
+                                                         width=100)
 
         # # Checkbox widgets
         # self.seed_checkbox = pn.widgets.Checkbox(name='As random seed', visible=False, align='end')
