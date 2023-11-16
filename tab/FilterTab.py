@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import GLOBAL_VARS as gv
 
+from model.filter import butterworth_filter_calculator
+
 hv.extension('bokeh')
 pn.extension()
 
@@ -40,6 +42,9 @@ class FilterTab:
         self.cutoff_input_widget = pn.widgets.FloatInput(name='Cutoff frequency',
                                                          visible=True,
                                                          width=150)
+        self.order_input_widget = pn.widgets.IntInput(name='Order',
+                                                         visible=True,
+                                                         width=150)
 
         # # Checkbox widgets
         # self.seed_checkbox = pn.widgets.Checkbox(name='As random seed', visible=False, align='end')
@@ -48,12 +53,12 @@ class FilterTab:
         self.calculate_button = pn.widgets.Button(name="Calculate", button_type="primary", visible=True)
         self.calculate_button.on_click(self.calculate_function)
 
-
         # Vars
         self.content = pn.Column(self.select_ad_widget,
                                  self.select_type_widget,
                                  pn.Row(self.cutoff_input_widget,
                                         self.select_cutoff_units_widget),
+                                 self.order_input_widget,
                                  self.calculate_button,
                                  self.text_hint.value,
                                  width=500)
@@ -70,4 +75,5 @@ class FilterTab:
 
     def calculate_function(self, event):
         pass
+        # butterworth_filter_calculator()
 
