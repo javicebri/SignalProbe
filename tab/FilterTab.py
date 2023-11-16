@@ -54,8 +54,8 @@ class FilterTab:
                                  self.select_type_widget,
                                  pn.Row(self.cutoff_input_widget,
                                         self.select_cutoff_units_widget),
-                                 self.text_hint.value,
                                  self.calculate_button,
+                                 self.text_hint.value
                                  width=500)
 
     def set_select_ad(self, event):
