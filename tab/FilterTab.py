@@ -89,10 +89,12 @@ class FilterTab:
 
         # Crear un rango de valores x (imaginarios)
         scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-        n_points = int(100 * scale)
-        end_point = complex(0, scale * 10)
-        valores_x = np.linspace(0j, end_point, n_points)
-        valores_x = valores_x / (cutoff)
+        n_points = max(int(100 * scale), 1000) #Ensure a min of points
+        n_points = min(n_points, int(100 * 1e3))
+        end_point = complex(0, cutoff * scale * 10)
+        init_point = complex(0, 0.010)
+        valores_x = np.geomspace(init_point, end_point, n_points)
+        valores_x = valores_x / cutoff
 
         # Evaluar la función para cada valor de x
         valores_y = self.filter_obj.gain_response(valores_x)
@@ -100,6 +102,9 @@ class FilterTab:
         curve = hv.Curve((valores_x.imag, valores_y),
                          'f/fc',
                          'Gain').opts(width=500, height=300, title='Bode Plot', logx=True)
-        self.plot_pane.object = curve
+        vertical_line_cutoff = hv.VLine(x= 1).opts(line_dash='dashed', line_color='red')
+
+
+        self.plot_pane.object = curve * vertical_line_cutoff
 
 
