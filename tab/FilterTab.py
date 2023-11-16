@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import GLOBAL_VARS as gv
 
-from model.filter import butterworth_filter_calculator
+from model.filter import Filter, Butterwoth, route_filter_class
 
 hv.extension('bokeh')
 pn.extension()
@@ -14,6 +14,8 @@ class FilterTab:
 
         self.ad = None
         self.filter_list = None
+        self.filter_obj = None
+        self.plot_pane = pn.pane.HoloViews()
 
         ad_list = list(gv.filter_options_dict.keys())
         frequency_units_list = list(gv.frequency_units_dict.keys())
@@ -53,8 +55,8 @@ class FilterTab:
 
         # Button widgets
         self.calculate_button = pn.widgets.Button(name="Calculate", button_type="primary", visible=True)
-        self.calculate_button.on_click(self.calculate_function)
-
+        self.calculate_button.on_click(self.calculate_filter)
+        self.text_hint.value = 'OBJETO MO CREADO'
         # Vars
         self.content = pn.Column(self.select_ad_widget,
                                  self.select_type_widget,
@@ -62,7 +64,8 @@ class FilterTab:
                                         self.select_cutoff_units_widget),
                                  self.order_input_widget,
                                  self.calculate_button,
-                                 self.text_hint.value,
+                                 self.text_hint,
+                                 self.plot_pane,
                                  width=500)
 
     def set_select_ad(self, event):
@@ -75,7 +78,28 @@ class FilterTab:
             self.select_type_widget.options = self.filter_list
             self.select_type_widget.value = self.filter_list[0]
 
-    def calculate_function(self, event):
-        pass
-        # butterworth_filter_calculator()
+    def calculate_filter(self, event):
+        cutoff = self.cutoff_input_widget.value *\
+                 gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+        self.filter_obj = route_filter_class(type_str=self.select_type_widget.value,
+                                        cutoff=cutoff,
+                                        order=self.order_input_widget.value,
+                                        gain=1)
+        self.text_hint.value = str(self.filter_obj.gain_response(1j))
+
+        # Crear un rango de valores x (imaginarios)
+        scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+        n_points = int(100 * scale)
+        end_point = complex(0, scale * 10)
+        valores_x = np.linspace(0j, end_point, n_points)
+        valores_x = valores_x / (cutoff)
+
+        # Evaluar la función para cada valor de x
+        valores_y = self.filter_obj.gain_response(valores_x)
+
+        curve = hv.Curve((valores_x.imag, valores_y),
+                         'f/fc',
+                         'Gain').opts(width=500, height=300, title='Bode Plot', logx=True)
+        self.plot_pane.object = curve
+
 
