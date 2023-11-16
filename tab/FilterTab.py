@@ -101,7 +101,7 @@ class FilterTab:
 
         curve = hv.Curve((valores_x.imag, valores_y),
                          'f/fc',
-                         'Gain').opts(width=500, height=300, title='Bode Plot', logx=True)
+                         'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
         vertical_line_cutoff = hv.VLine(x= 1).opts(line_dash='dashed', line_color='red')
 
 
