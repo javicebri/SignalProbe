@@ -82,12 +82,11 @@ class FilterTab:
         cutoff = self.cutoff_input_widget.value *\
                  gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         self.filter_obj = route_filter_class(type_str=self.select_type_widget.value,
-                                        cutoff=cutoff,
-                                        order=self.order_input_widget.value,
-                                        gain=1)
+                                             cutoff=cutoff,
+                                             order=self.order_input_widget.value,
+                                             gain=1)
         self.text_hint.value = str(self.filter_obj.gain_response(1j))
 
-        # Crear un rango de valores x (imaginarios)
         scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         n_points = max(int(100 * scale), 1000) #Ensure a min of points
         n_points = min(n_points, int(100 * 1e3))
@@ -96,14 +95,12 @@ class FilterTab:
         values_x = np.geomspace(init_point, end_point, n_points)
         norm_values_x = values_x / cutoff
 
-        # Evaluar la función para cada valor de x
         values_y = self.filter_obj.gain_response(norm_values_x)
 
         curve = hv.Curve((norm_values_x.imag, values_y),
                          'f/fc',
                          'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
         vertical_line_cutoff = hv.VLine(x= 1).opts(line_dash='dashed', line_color='red')
-
 
         self.plot_pane.object = curve * vertical_line_cutoff
 
