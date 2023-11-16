@@ -93,13 +93,13 @@ class FilterTab:
         n_points = min(n_points, int(100 * 1e3))
         end_point = complex(0, cutoff * scale * 10)
         init_point = complex(0, 0.010)
-        valores_x = np.geomspace(init_point, end_point, n_points)
-        valores_x = valores_x / cutoff
+        values_x = np.geomspace(init_point, end_point, n_points)
+        norm_values_x = values_x / cutoff
 
         # Evaluar la función para cada valor de x
-        valores_y = self.filter_obj.gain_response(valores_x)
+        values_y = self.filter_obj.gain_response(norm_values_x)
 
-        curve = hv.Curve((valores_x.imag, valores_y),
+        curve = hv.Curve((norm_values_x.imag, values_y),
                          'f/fc',
                          'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
         vertical_line_cutoff = hv.VLine(x= 1).opts(line_dash='dashed', line_color='red')
