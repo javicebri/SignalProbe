@@ -14,20 +14,30 @@ class Filter:
 
     def phase_response(self, s):
         """
-        Calculate phase value in radians of the frequency response in s
+        Calculate phase values in radians of the frequency response for s
         tan−1[Im{X(ω)}Re{X(ω)}]
-        :param s: complex laplace space variable
-        :return: float value
+        :param s: np array of complex laplace space variables
+        :return: np array of values
         """
         return np.unwrap(np.angle(self.freq_response(s)))
 
     def gain_response(self, s):
         """
-        Calculate gain value of the frequency response in s
-        :param s: complex laplace space variable
-        :return: float value
+        Calculate gain values of the frequency response for s
+        :param s: np array of complex laplace space variables
+        :return: np array of values
         """
         return np.abs(self.freq_response(s))
+
+    def gain_phase_response(self, s):
+        """
+        Calculate gain and phase value of the frequency response for s
+        :param s: np array of complex laplace space variables
+        :return: dict with gain and phase values
+        """
+        fr = self.freq_response(s)
+        return {'Gain': np.abs(fr),
+                'Phase': np.unwrap(np.angle(fr))}
 
 class Butterwoth(Filter):
     def __init__(self, cutoff, order, gain=1):

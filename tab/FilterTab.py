@@ -132,12 +132,17 @@ class FilterTab:
         else:
             w_cutoff = 2 * np.pi * cutoff
 
-        self.text_f0_gain_value.value = str(self.filter_obj.gain_response(0j))
-        self.text_fc_gain_value.value = str(self.filter_obj.gain_response(w_cutoff))
-        self.text_fc_phase_value.value = str(self.filter_obj.phase_response(np.array([w_cutoff]))[0] * (180 / np.pi))
+        phase_response_0_dict = self.filter_obj.gain_phase_response(np.array([0j]))
+        phase_response_cutoff_dict = self.filter_obj.gain_phase_response(np.array([w_cutoff]))
+        phase_response_values_dict = self.filter_obj.gain_phase_response(values_x)
 
-        gain_values = self.filter_obj.gain_response(values_x)
-        phase_values = self.filter_obj.phase_response(values_x) * (180 / np.pi)  # In deg
+        self.text_f0_gain_value.value = str(phase_response_0_dict['Gain'][0])
+        self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
+        self.text_fc_phase_value.value = str(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi))
+
+
+        gain_values = phase_response_values_dict['Gain']
+        phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
 
         gain_curve = hv.Curve((values_x.imag, gain_values),
                               'f/fc',
