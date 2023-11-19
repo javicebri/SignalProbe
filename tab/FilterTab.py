@@ -42,17 +42,22 @@ class FilterTab:
 
         # Text widgets
         self.text_hint = pn.widgets.StaticText(name='Hint', value='')
-        self.text_f0_value = pn.widgets.StaticText(name='Gain f0', value='')
-        self.text_fc_value = pn.widgets.StaticText(name='Gain fc', value='')
+        self.text_f0_gain_value = pn.widgets.StaticText(name='Gain f0', value='', visible=False)
+        self.text_fc_gain_value = pn.widgets.StaticText(name='Gain fc', value='', visible=False)
+        self.text_fc_phase_value = pn.widgets.StaticText(name='Phase fc', value='', visible=False)
         self.text_hint.value = "Select A/D and type of filter."
 
         # Input widgets
         self.cutoff_input_widget = pn.widgets.FloatInput(name='Cutoff frequency',
+                                                         value=1.0,
+                                                         start=0.1,
                                                          visible=True,
                                                          width=100)
         self.order_input_widget = pn.widgets.IntInput(name='Order',
-                                                         visible=True,
-                                                         width=100)
+                                                      value=1,
+                                                      start=1,
+                                                      visible=True,
+                                                      width=100)
 
         # # Checkbox widgets
         # self.seed_checkbox = pn.widgets.Checkbox(name='As random seed', visible=False, align='end')
@@ -69,8 +74,9 @@ class FilterTab:
                                  self.order_input_widget,
                                  self.calculate_button,
                                  self.text_hint,
-                                 self.text_f0_value,
-                                 self.text_fc_value,
+                                 self.text_f0_gain_value,
+                                 self.text_fc_gain_value,
+                                 self.text_fc_phase_value,
                                  self.plot_pane,
                                  width=500)
 
@@ -101,8 +107,13 @@ class FilterTab:
                                              cutoff=cutoff,
                                              order=self.order_input_widget.value,
                                              gain=1)
-        self.text_f0_value.value = str(self.filter_obj.gain_response(0j))
-        self.text_fc_value.value = str(self.filter_obj.gain_response(1j))
+        self.text_f0_gain_value.visible = True
+        self.text_fc_gain_value.visible = True
+        self.text_fc_phase_value.visible = True
+        self.text_f0_gain_value.value = str(self.filter_obj.gain_response(0j))
+        self.text_fc_gain_value.value = str(self.filter_obj.gain_response(1j))
+        self.text_fc_phase_value.value = str(self.filter_obj.phase_response(np.array([1j]))[0] * (180 / np.pi))
+        self.text_hint.value = "Done."
 
         scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         n_points = max(int(100 * scale), 1000)  # Ensure a min of points
@@ -123,8 +134,8 @@ class FilterTab:
                                'Phase [º]').opts(width=500, height=300, logx=True, show_grid=True)
         vertical_cutoff_line = hv.VLine(x=1).opts(line_dash='dashed', line_color='black')
 
-        self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary]) *\
-                                vertical_cutoff_line
+        self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line
+
 
 
 
