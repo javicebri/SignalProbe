@@ -15,3 +15,4 @@ frequency_units_dict = {
     "MHz": 1e6
 }
 
+normalize_options = ["Yes", "No"]

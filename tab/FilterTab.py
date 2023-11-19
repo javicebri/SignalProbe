@@ -40,6 +40,11 @@ class FilterTab:
                                                             width=60)
         # self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
 
+        self.normalize_radio_button_group = pn.widgets.RadioButtonGroup(options=gv.normalize_options,
+                                                                        value=gv.normalize_options[0],
+                                                                        name='Normalize',
+                                                                        visible=False)
+
         # Text widgets
         self.text_hint = pn.widgets.StaticText(name='Hint', value='')
         self.text_f0_gain_value = pn.widgets.StaticText(name='Gain f0', value='', visible=False)
@@ -74,6 +79,7 @@ class FilterTab:
                                  self.order_input_widget,
                                  self.calculate_button,
                                  self.text_hint,
+                                 self.normalize_radio_button_group,
                                  self.text_f0_gain_value,
                                  self.text_fc_gain_value,
                                  self.text_fc_phase_value,
@@ -110,9 +116,7 @@ class FilterTab:
         self.text_f0_gain_value.visible = True
         self.text_fc_gain_value.visible = True
         self.text_fc_phase_value.visible = True
-        self.text_f0_gain_value.value = str(self.filter_obj.gain_response(0j))
-        self.text_fc_gain_value.value = str(self.filter_obj.gain_response(1j))
-        self.text_fc_phase_value.value = str(self.filter_obj.phase_response(np.array([1j]))[0] * (180 / np.pi))
+        self.normalize_radio_button_group.visible = False
         self.text_hint.value = "Done."
 
         scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
@@ -121,20 +125,33 @@ class FilterTab:
         end_point = complex(0, cutoff * scale * 10)
         init_point = complex(0, 0.010)
         values_x = np.geomspace(init_point, end_point, n_points)
-        norm_values_x = values_x / cutoff
 
-        gain_values = self.filter_obj.gain_response(norm_values_x)
-        phase_values = self.filter_obj.phase_response(norm_values_x) * (180 / np.pi)  # In deg
+        if self.normalize_radio_button_group.value == "Yes":
+            values_x = values_x / cutoff
+            w_cutoff = 1j
+        else:
+            w_cutoff = 2 * np.pi * cutoff
 
-        gain_curve = hv.Curve((norm_values_x.imag, gain_values),
+        self.text_f0_gain_value.value = str(self.filter_obj.gain_response(0j))
+        self.text_fc_gain_value.value = str(self.filter_obj.gain_response(w_cutoff))
+        self.text_fc_phase_value.value = str(self.filter_obj.phase_response(np.array([w_cutoff]))[0] * (180 / np.pi))
+
+        gain_values = self.filter_obj.gain_response(values_x)
+        phase_values = self.filter_obj.phase_response(values_x) * (180 / np.pi)  # In deg
+
+        gain_curve = hv.Curve((values_x.imag, gain_values),
                               'f/fc',
-                              'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
-        phase_curve = hv.Curve((norm_values_x.imag, phase_values),
+                              'Gain',
+                              label='Gain').opts(width=500, height=300, title='Bode Plot',
+                                           logx=True, show_grid=True)
+        phase_curve = hv.Curve((values_x.imag, phase_values),
                                'f/fc',
-                               'Phase [º]').opts(width=500, height=300, logx=True, show_grid=True)
-        vertical_cutoff_line = hv.VLine(x=1).opts(line_dash='dashed', line_color='black')
+                               'Phase [º]',
+                               label='Phase').opts(width=500, height=300, logx=True, show_grid=True)
+        vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq',).opts(line_dash='dashed', line_color='black')
 
-        self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line
+        self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) *\
+                                 vertical_cutoff_line)
 
 
 

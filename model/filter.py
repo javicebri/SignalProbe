@@ -14,7 +14,7 @@ class Filter:
 
     def phase_response(self, s):
         """
-        Calculate pahse value in radians of the frequency response in s
+        Calculate phase value in radians of the frequency response in s
         tan−1[Im{X(ω)}Re{X(ω)}]
         :param s: complex laplace space variable
         :return: float value
