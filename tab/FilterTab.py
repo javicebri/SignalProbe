@@ -39,7 +39,9 @@ class FilterTab:
 
         # Text widgets
         self.text_hint = pn.widgets.StaticText(name='Hint', value='')
-        self.text_hint.value = self.select_ad_widget.value
+        self.text_f0_value = pn.widgets.StaticText(name='Gain f0', value='')
+        self.text_fc_value = pn.widgets.StaticText(name='Gain fc', value='')
+        self.text_hint.value = "Select A/D and type of filter."
 
         # Input widgets
         self.cutoff_input_widget = pn.widgets.FloatInput(name='Cutoff frequency',
@@ -64,6 +66,8 @@ class FilterTab:
                                  self.order_input_widget,
                                  self.calculate_button,
                                  self.text_hint,
+                                 self.text_f0_value,
+                                 self.text_fc_value,
                                  self.plot_pane,
                                  width=500)
 
@@ -94,7 +98,8 @@ class FilterTab:
                                              cutoff=cutoff,
                                              order=self.order_input_widget.value,
                                              gain=1)
-        self.text_hint.value = str(self.filter_obj.gain_response(1j))
+        self.text_f0_value.value = str(self.filter_obj.gain_response(0j))
+        self.text_fc_value.value = str(self.filter_obj.gain_response(1j))
 
         scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         n_points = max(int(100 * scale), 1000) #Ensure a min of points
