@@ -16,6 +16,11 @@ class Filter:
         pass
 
     def gain_response(self, s):
+        """
+        Calculate gain value of the frequency response
+        :param s: complex laplace space variable
+        :return: float value
+        """
         return np.abs(self.freq_response(s))
 
 class Butterwoth(Filter):
@@ -26,6 +31,11 @@ class Butterwoth(Filter):
         pass
 
     def freq_response(self, s):
+        """
+        Calculate frequency response of the filter in laplace space
+        :param s: complex laplace space variable
+        :return: complex filter response for s value
+        """
 
         n = int(self.order)
         G_0 = self.gain
@@ -45,9 +55,14 @@ class Butterwoth(Filter):
         pass
 
 def route_filter_class(type_str, cutoff, order, gain=1):
+    """
+    Create a filter of the selected class in the panel
+    :param type_str: str with filter type
+    :param cutoff: float with cutoff frequency
+    :param order: int with the filter order
+    :param gain: float with filter gain value
+    :return: object of the selected class
+    """
     if type_str == "Butterworth":
         filter_obj = Butterwoth(cutoff, order, gain)
     return filter_obj
-
-def butterworth_filter_calculator(cutoff_freq, freq_units):
-    pass

@@ -11,8 +11,7 @@ pn.extension()
 
 class FilterTab:
     def __init__(self):
-
-        self.ad = None
+        self.ad = None # Analog or Digital
         self.filter_list = None
         self.filter_obj = None
         self.plot_pane = pn.pane.HoloViews()
@@ -56,7 +55,7 @@ class FilterTab:
         # Button widgets
         self.calculate_button = pn.widgets.Button(name="Calculate", button_type="primary", visible=True)
         self.calculate_button.on_click(self.calculate_filter)
-        self.text_hint.value = 'OBJETO MO CREADO'
+        self.text_hint.value = ''
         # Vars
         self.content = pn.Column(self.select_ad_widget,
                                  self.select_type_widget,
@@ -69,6 +68,11 @@ class FilterTab:
                                  width=500)
 
     def set_select_ad(self, event):
+        """
+        Selector of Analog or Digital
+        :param event: scroll selector event
+        :return: None
+        """
         if isinstance(event, str):
             self.ad = event
             self.filter_list = gv.filter_options_dict[self.ad]
@@ -79,6 +83,11 @@ class FilterTab:
             self.select_type_widget.value = self.filter_list[0]
 
     def calculate_filter(self, event):
+        """
+        Get filter response and plot it.
+        :param event: Button click event
+        :return: None
+        """
         cutoff = self.cutoff_input_widget.value *\
                  gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         self.filter_obj = route_filter_class(type_str=self.select_type_widget.value,
