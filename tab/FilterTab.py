@@ -84,7 +84,7 @@ class FilterTab:
 
     def calculate_filter(self, event):
         """
-        Get filter response and plot it.
+        Calculate filter response and plot it.
         :param event: Button click event
         :return: None
         """
@@ -109,7 +109,7 @@ class FilterTab:
         curve = hv.Curve((norm_values_x.imag, values_y),
                          'f/fc',
                          'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
-        vertical_line_cutoff = hv.VLine(x= 1).opts(line_dash='dashed', line_color='red')
+        vertical_line_cutoff = hv.VLine(x=1).opts(line_dash='dashed', line_color='red')
 
         self.plot_pane.object = curve * vertical_line_cutoff
 
