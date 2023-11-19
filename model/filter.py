@@ -12,12 +12,18 @@ class Filter:
     def freq_response(self):
         pass
 
-    def phase_response(self):
-        pass
+    def phase_response(self, s):
+        """
+        Calculate pahse value in radians of the frequency response in s
+        tan−1[Im{X(ω)}Re{X(ω)}]
+        :param s: complex laplace space variable
+        :return: float value
+        """
+        return np.unwrap(np.angle(self.freq_response(s)))
 
     def gain_response(self, s):
         """
-        Calculate gain value of the frequency response
+        Calculate gain value of the frequency response in s
         :param s: complex laplace space variable
         :return: float value
         """
@@ -51,8 +57,6 @@ class Butterwoth(Filter):
 
         return G_0/B_n
 
-    def phase_response(self):
-        pass
 
 def route_filter_class(type_str, cutoff, order, gain=1):
     """

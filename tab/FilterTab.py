@@ -1,10 +1,13 @@
 import panel as pn
 import holoviews as hv
+from bokeh.models import GlyphRenderer, LinearAxis, LinearScale, Range1d
+
 import pandas as pd
 import numpy as np
 import GLOBAL_VARS as gv
 
 from model.filter import Filter, Butterwoth, route_filter_class
+from controller.setActions import plot_secondary
 
 hv.extension('bokeh')
 pn.extension()
@@ -102,20 +105,29 @@ class FilterTab:
         self.text_fc_value.value = str(self.filter_obj.gain_response(1j))
 
         scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-        n_points = max(int(100 * scale), 1000) #Ensure a min of points
+        n_points = max(int(100 * scale), 1000)  # Ensure a min of points
         n_points = min(n_points, int(100 * 1e3))
         end_point = complex(0, cutoff * scale * 10)
         init_point = complex(0, 0.010)
         values_x = np.geomspace(init_point, end_point, n_points)
         norm_values_x = values_x / cutoff
 
-        values_y = self.filter_obj.gain_response(norm_values_x)
+        gain_values = self.filter_obj.gain_response(norm_values_x)
+        phase_values = self.filter_obj.phase_response(norm_values_x) * (180 / np.pi)  # In deg
 
-        curve = hv.Curve((norm_values_x.imag, values_y),
-                         'f/fc',
-                         'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
-        vertical_line_cutoff = hv.VLine(x=1).opts(line_dash='dashed', line_color='red')
+        gain_curve = hv.Curve((norm_values_x.imag, gain_values),
+                              'f/fc',
+                              'Gain').opts(width=500, height=300, title='Bode Plot', logx=True, show_grid=True)
+        phase_curve = hv.Curve((norm_values_x.imag, phase_values),
+                               'f/fc',
+                               'Phase [º]').opts(width=500, height=300, logx=True, show_grid=True)
+        vertical_cutoff_line = hv.VLine(x=1).opts(line_dash='dashed', line_color='black')
 
-        self.plot_pane.object = curve * vertical_line_cutoff
+        self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary]) *\
+                                vertical_cutoff_line
+
+
+
+
 
 
