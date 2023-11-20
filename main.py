@@ -14,7 +14,7 @@ class SigProbe:
     def __init__(self):
         self.plot_pane = pn.pane.HoloViews()
 
-        # self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
+        self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
 
         self.text_title = pn.pane.Markdown("# SigProbe", styles={'font-size': '16pt'})
 
@@ -24,7 +24,7 @@ class SigProbe:
 
     def view(self):
         return pn.Column(
-            self.text_title,
+            pn.Row(self.text_title, self.imagen_pane),
             pn.Tabs(
                 ("Filter", self.filter_tab.content),
                 ("Choke", self.choke_tab),
