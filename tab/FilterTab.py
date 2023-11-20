@@ -72,19 +72,22 @@ class FilterTab:
         self.calculate_button.on_click(self.calculate_filter)
         self.text_hint.value = ''
         # Vars
-        self.content = pn.Column(self.select_ad_widget,
-                                 self.select_type_widget,
-                                 pn.Row(self.cutoff_input_widget,
-                                        self.select_cutoff_units_widget),
-                                 self.order_input_widget,
-                                 self.calculate_button,
-                                 self.text_hint,
-                                 self.normalize_radio_button_group,
-                                 self.text_f0_gain_value,
-                                 self.text_fc_gain_value,
-                                 self.text_fc_phase_value,
-                                 self.plot_pane,
-                                 width=500)
+        self.content = pn.Row(
+            pn.Column(self.select_ad_widget,
+                      self.select_type_widget,
+                      pn.Row(self.cutoff_input_widget,
+                             self.select_cutoff_units_widget),
+                      self.order_input_widget,
+                      self.calculate_button,
+                      self.text_hint,
+                      ),
+            pn.Column(self.normalize_radio_button_group,
+                      self.plot_pane,
+                      self.text_f0_gain_value,
+                      self.text_fc_gain_value,
+                      self.text_fc_phase_value
+                      ),
+            width=500)
 
     def set_select_ad(self, event):
         """
@@ -147,12 +150,12 @@ class FilterTab:
         gain_curve = hv.Curve((values_x.imag, gain_values),
                               'f/fc',
                               'Gain',
-                              label='Gain').opts(width=500, height=300, title='Bode Plot',
+                              label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
                                            logx=True, show_grid=True)
         phase_curve = hv.Curve((values_x.imag, phase_values),
                                'f/fc',
                                'Phase [º]',
-                               label='Phase').opts(width=500, height=300, logx=True, show_grid=True)
+                               label='Phase').opts(tools=['hover'], width=500, height=300, logx=True, show_grid=True)
         vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq',).opts(line_dash='dashed', line_color='black')
 
         self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) *\
