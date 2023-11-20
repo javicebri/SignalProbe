@@ -33,6 +33,7 @@ class FilterTab:
                                                     value=self.filter_list[0],
                                                     name='Type of filter',
                                                     width=180)
+        self.select_type_widget.param.watch(self.set_select_type, "value")
 
         self.select_cutoff_units_widget = pn.widgets.Select(options=frequency_units_list,
                                                             value=frequency_units_list[0],
@@ -63,6 +64,11 @@ class FilterTab:
                                                       start=1,
                                                       visible=True,
                                                       width=100)
+        self.ripple_input_widget = pn.widgets.FloatInput(name='Ripple [dB]',
+                                                      value=1,
+                                                      start=0,
+                                                      visible=False,
+                                                      width=100)
 
         # # Checkbox widgets
         # self.seed_checkbox = pn.widgets.Checkbox(name='As random seed', visible=False, align='end')
@@ -78,6 +84,7 @@ class FilterTab:
                       pn.Row(self.cutoff_input_widget,
                              self.select_cutoff_units_widget),
                       self.order_input_widget,
+                      self.ripple_input_widget,
                       self.calculate_button,
                       self.text_hint,
                       ),
@@ -104,6 +111,15 @@ class FilterTab:
             self.select_type_widget.options = self.filter_list
             self.select_type_widget.value = self.filter_list[0]
 
+    def set_select_type(self, event):
+        """
+        Activate ripple input for Chebyshev type
+        :param event: event
+        :return: None
+        """
+        if event.obj.value == "Chebyshev":
+            self.ripple_input_widget.visible = True
+
     def calculate_filter(self, event):
         """
         Calculate filter response and plot it.
@@ -115,7 +131,8 @@ class FilterTab:
         self.filter_obj = route_filter_class(type_str=self.select_type_widget.value,
                                              cutoff=cutoff,
                                              order=self.order_input_widget.value,
-                                             gain=1)
+                                             gain=1,
+                                             ripple=self.ripple_input_widget.value)
         self.text_f0_gain_value.visible = True
         self.text_fc_gain_value.visible = True
         self.text_fc_phase_value.visible = True

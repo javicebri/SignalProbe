@@ -114,7 +114,7 @@ class Chebyshev(Filter):
         return G_0 * (A_n/B_n)
 
 
-def route_filter_class(type_str, cutoff, order, gain=1):
+def route_filter_class(type_str, cutoff, order, gain=1, ripple=1):
     """
     Create a filter of the selected class in the panel
     :param type_str: str with filter type
