@@ -85,8 +85,8 @@ class FilterTab:
                       self.plot_pane,
                       self.text_f0_gain_value,
                       self.text_fc_gain_value,
-                      self.text_fc_phase_value
-                      ),
+                      self.text_fc_phase_value,
+                      styles=dict(background='WhiteSmoke'), width=525),
             width=500)
 
     def set_select_ad(self, event):
