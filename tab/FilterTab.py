@@ -65,7 +65,7 @@ class FilterTab:
                                                       visible=True,
                                                       width=100)
         self.ripple_input_widget = pn.widgets.FloatInput(name='Ripple [dB]',
-                                                      value=1,
+                                                      value=0.5,
                                                       start=0,
                                                       visible=False,
                                                       width=100)
