@@ -84,8 +84,8 @@ class Chebyshev(Filter):
         :return: complex si
         """
         gamma = ((1 + np.sqrt(1 + eps**2)) / eps)**(1/n)
-        sig = (((1/gamma)-gamma)/2) * (np.sin(2*i - 1)*np.pi)/(2*n)
-        omg = (((1/gamma)+gamma)/2) * (np.cos(2*i - 1)*np.pi)/(2*n)
+        sig = (((1/gamma)-gamma)/2) * np.sin(((2*i - 1)*np.pi) / (2*n))
+        omg = (((1/gamma)+gamma)/2) * np.cos(((2*i - 1)*np.pi) / (2*n))
         return complex(sig, omg)
 
     def freq_response(self, s):
