@@ -65,10 +65,10 @@ class FilterTab:
                                                       visible=True,
                                                       width=100)
         self.ripple_input_widget = pn.widgets.FloatInput(name='Ripple [dB]',
-                                                      value=0.5,
-                                                      start=0,
-                                                      visible=False,
-                                                      width=100)
+                                                         value=0.5,
+                                                         start=0,
+                                                         visible=False,
+                                                         width=100)
 
         # # Checkbox widgets
         # self.seed_checkbox = pn.widgets.Checkbox(name='As random seed', visible=False, align='end')

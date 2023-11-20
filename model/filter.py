@@ -121,6 +121,7 @@ def route_filter_class(type_str, cutoff, order, gain=1, ripple=1):
     :param cutoff: float with cutoff frequency
     :param order: int with the filter order
     :param gain: float with filter gain value
+    :param ripple: float ripple in dB
     :return: object of the selected class
     """
     if type_str == "Butterworth":
