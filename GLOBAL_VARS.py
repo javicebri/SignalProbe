@@ -3,7 +3,7 @@
 tabs_options_list = ["Filter", "Choke"]
 
 filter_options_dict = {
-    "Analog": ["Butterworth", "Chebyshev", "Elliptic"],
+    "Analog": ["Butterworth", "Chebyshev"],
     "Digital": ["FIR", "IIR"]
 }
 
