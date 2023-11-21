@@ -158,7 +158,7 @@ class FilterTab:
         phase_response_cutoff_dict = self.filter_obj.gain_phase_response(np.array([w_cutoff]))
         phase_response_values_dict = self.filter_obj.gain_phase_response(values_x)
 
-        self.text_f0_gain_value.value = str(phase_response_0_dict['Gain'][0])
+        self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
         self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
         self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
 
