@@ -119,6 +119,8 @@ class FilterTab:
         """
         if event.obj.value == "Chebyshev":
             self.ripple_input_widget.visible = True
+        else:
+            self.ripple_input_widget.visible = False
 
     def calculate_filter(self, event):
         """
