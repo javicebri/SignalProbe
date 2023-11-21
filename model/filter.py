@@ -107,9 +107,9 @@ class Chebyshev(Filter):
             A_n = A_n * (- self.pole_i(i, eps, n))
             B_n = B_n * (s - self.pole_i(i, eps, n))
 
-        # if n % 2 == 0:
-        #     #Even
-        #     A_n = A_n * 10**(r/20)
+        if n % 2 == 0:
+            #Even
+            A_n = A_n * 10**(r/20)
 
         return G_0 * (A_n/B_n)
 
