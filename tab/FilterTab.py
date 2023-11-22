@@ -14,9 +14,12 @@ pn.extension()
 
 class FilterTab:
     def __init__(self):
-        self.ad = None # Analog or Digital
-        self.filter_list = None
+        self.ad = None  # Analog or Digital
+        self.filter_dict = None  # Dict Butter, Cheby, FIR, IIR... with its methods and widgets
+        self.filter_list = None  # List Butter, Cheby, FIR, IIR...
         self.filter_obj = None
+        self.method_list = [None]
+        self.default_method = None
         self.plot_pane = pn.pane.HoloViews()
 
         ad_list = list(gv.filter_options_dict.keys())
@@ -29,11 +32,19 @@ class FilterTab:
                                                   name='Type of signal',
                                                   width=180)
         self.select_ad_widget.param.watch(self.set_select_ad, "value")
-        self.select_type_widget = pn.widgets.Select(options=self.filter_list,
-                                                    value=self.filter_list[0],
-                                                    name='Type of filter',
-                                                    width=180)
-        self.select_type_widget.param.watch(self.set_select_type, "value")
+        self.select_filter_widget = pn.widgets.Select(options=self.filter_list,
+                                                      value=self.filter_list[0],
+                                                      name='Type of filter',
+                                                      width=180)
+        self.select_filter_widget.param.watch(self.set_select_filter, "value")
+
+        self.select_method_widget = pn.widgets.Select(options=self.method_list,
+                                                      value=self.method_list[0],
+                                                      name='Method',
+                                                      visible=False,
+                                                      width=180)
+        # self.select_filter_widget.param.watch(self.set_select_type, "value")
+
 
         self.select_cutoff_units_widget = pn.widgets.Select(options=frequency_units_list,
                                                             value=frequency_units_list[0],
@@ -80,7 +91,8 @@ class FilterTab:
         # Vars
         self.content = pn.Row(
             pn.Column(self.select_ad_widget,
-                      self.select_type_widget,
+                      self.select_filter_widget,
+                      self.select_method_widget,
                       pn.Row(self.cutoff_input_widget,
                              self.select_cutoff_units_widget),
                       self.order_input_widget,
@@ -96,6 +108,23 @@ class FilterTab:
                       styles=dict(background='WhiteSmoke'), width=525),
             width=500)
 
+        self.widget_dict = {
+            "select_ad_widget": self.select_ad_widget,
+            "select_filter_widget": self.select_filter_widget,
+            "select_method_widget": self.select_method_widget,
+            "select_cutoff_units_widget": self.select_cutoff_units_widget,
+            "normalize_radio_button_group": self.normalize_radio_button_group,
+            "text_hint": self.text_hint,
+            "text_f0_gain_value": self.text_f0_gain_value,
+            "text_fc_gain_value": self.text_fc_gain_value,
+            "text_fc_phase_value": self.text_fc_phase_value,
+            "cutoff_input_widget": self.cutoff_input_widget,
+            "order_input_widget": self.order_input_widget,
+            "ripple_input_widget": self.ripple_input_widget,
+            "calculate_button": self.calculate_button
+        }
+        a=1
+
     def set_select_ad(self, event):
         """
         Selector of Analog or Digital
@@ -104,23 +133,37 @@ class FilterTab:
         """
         if isinstance(event, str):
             self.ad = event
-            self.filter_list = gv.filter_options_dict[self.ad]
+            self.filter_dict = gv.filter_options_dict[self.ad]
+            self.filter_list = list(self.filter_dict.keys())
         else:
             self.ad = event.obj.value
-            self.filter_list = gv.filter_options_dict[self.ad]
-            self.select_type_widget.options = self.filter_list
-            self.select_type_widget.value = self.filter_list[0]
+            self.filter_dict = gv.filter_options_dict[self.ad]
+            self.filter_list = list(self.filter_dict.keys())
+            self.select_filter_widget.options = self.filter_list
+            self.select_filter_widget.value = self.filter_list[0]
 
-    def set_select_type(self, event):
+    def set_select_filter(self, event):
         """
-        Activate ripple input for Chebyshev type
+        Activate widgets input for selected filter
         :param event: event
         :return: None
         """
-        if event.obj.value == "Chebyshev":
-            self.ripple_input_widget.visible = True
-        else:
-            self.ripple_input_widget.visible = False
+        filter_name_str = event.obj.value
+        self.method_list = list(self.filter_dict[filter_name_str].keys())
+        self.default_method = self.method_list[0]
+        self.select_method_widget.options = self.method_list
+        self.select_method_widget.value = self.default_method
+        widget_list = self.filter_dict[filter_name_str][self.default_method]['widgets']
+
+        visible_widget_set = set(widget_list) & set(self.widget_dict.keys())
+        invisible_widget_set = set(self.widget_dict.keys()) - set(widget_list)
+
+        # Set visible and invisible items
+        for v_i in visible_widget_set:
+            self.widget_dict[v_i].visible = True
+        for n_i in invisible_widget_set:
+            self.widget_dict[n_i].visible = False
+
 
     def calculate_filter(self, event):
         """
@@ -130,7 +173,7 @@ class FilterTab:
         """
         cutoff = self.cutoff_input_widget.value *\
                  gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-        self.filter_obj = route_filter_class(type_str=self.select_type_widget.value,
+        self.filter_obj = route_filter_class(type_str=self.select_filter_widget.value,
                                              cutoff=cutoff,
                                              order=self.order_input_widget.value,
                                              gain=1,
