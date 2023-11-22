@@ -64,17 +64,17 @@ class FilterTab:
         self.text_hint.value = "Select A/D and type of filter."
 
         # Input widgets
-        self.cutoff_input_widget = pn.widgets.FloatInput(name='Cutoff frequency',
+        self.input_cutoff_widget = pn.widgets.FloatInput(name='Cutoff frequency',
                                                          value=1.0,
                                                          start=0.1,
                                                          visible=True,
                                                          width=100)
-        self.order_input_widget = pn.widgets.IntInput(name='Order',
+        self.input_order_widget = pn.widgets.IntInput(name='Order',
                                                       value=1,
                                                       start=1,
                                                       visible=True,
                                                       width=100)
-        self.ripple_input_widget = pn.widgets.FloatInput(name='Ripple [dB]',
+        self.input_ripple_widget = pn.widgets.FloatInput(name='Ripple [dB]',
                                                          value=0.5,
                                                          start=0,
                                                          visible=False,
@@ -101,10 +101,10 @@ class FilterTab:
             pn.Column(self.select_ad_widget,
                       self.select_filter_widget,
                       self.select_method_widget,
-                      pn.Row(self.cutoff_input_widget,
+                      pn.Row(self.input_cutoff_widget,
                              self.select_cutoff_units_widget),
-                      self.order_input_widget,
-                      self.ripple_input_widget,
+                      self.input_order_widget,
+                      self.input_ripple_widget,
                       self.calculate_button,
                       self.text_hint,
                       ),
@@ -121,9 +121,9 @@ class FilterTab:
             "text_f0_gain_value": self.text_f0_gain_value,
             "text_fc_gain_value": self.text_fc_gain_value,
             "text_fc_phase_value": self.text_fc_phase_value,
-            "cutoff_input_widget": self.cutoff_input_widget,
-            "order_input_widget": self.order_input_widget,
-            "ripple_input_widget": self.ripple_input_widget,
+            "input_cutoff_widget": self.input_cutoff_widget,
+            "input_order_widget": self.input_order_widget,
+            "input_ripple_widget": self.input_ripple_widget,
             "calculate_button": self.calculate_button,
             "plot_column": self.plot_column
         }
@@ -173,13 +173,13 @@ class FilterTab:
         :param event: Button click event
         :return: None
         """
-        cutoff = self.cutoff_input_widget.value * \
+        cutoff = self.input_cutoff_widget.value * \
                  gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         self.filter_obj = route_filter_class(type_str=self.select_filter_widget.value,
                                              cutoff=cutoff,
-                                             order=self.order_input_widget.value,
+                                             order=self.input_order_widget.value,
                                              gain=1,
-                                             ripple=self.ripple_input_widget.value)
+                                             ripple=self.input_ripple_widget.value)
         self.text_f0_gain_value.visible = True
         self.text_fc_gain_value.visible = True
         self.text_fc_phase_value.visible = True
