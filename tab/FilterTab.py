@@ -12,6 +12,7 @@ from controller.setActions import plot_secondary
 hv.extension('bokeh')
 pn.extension()
 
+
 class FilterTab:
     def __init__(self):
         self.ad = None  # Analog or Digital
@@ -19,7 +20,6 @@ class FilterTab:
         self.filter_list = None  # List Butter, Cheby, FIR, IIR...
         self.filter_obj = None
         self.method_list = [None]
-        self.default_method = None
         self.plot_pane = pn.pane.HoloViews()
 
         ad_list = list(gv.filter_options_dict.keys())
@@ -44,7 +44,6 @@ class FilterTab:
                                                       visible=False,
                                                       width=180)
         # self.select_filter_widget.param.watch(self.set_select_type, "value")
-
 
         self.select_cutoff_units_widget = pn.widgets.Select(options=frequency_units_list,
                                                             value=frequency_units_list[0],
@@ -123,7 +122,7 @@ class FilterTab:
             "ripple_input_widget": self.ripple_input_widget,
             "calculate_button": self.calculate_button
         }
-        a=1
+        a = 1
 
     def set_select_ad(self, event):
         """
@@ -150,10 +149,10 @@ class FilterTab:
         """
         filter_name_str = event.obj.value
         self.method_list = list(self.filter_dict[filter_name_str].keys())
-        self.default_method = self.method_list[0]
+        default_method = self.method_list[0]
         self.select_method_widget.options = self.method_list
-        self.select_method_widget.value = self.default_method
-        widget_list = self.filter_dict[filter_name_str][self.default_method]['widgets']
+        self.select_method_widget.value = default_method
+        widget_list = self.filter_dict[filter_name_str][default_method]['widgets']
 
         visible_widget_set = set(widget_list) & set(self.widget_dict.keys())
         invisible_widget_set = set(self.widget_dict.keys()) - set(widget_list)
@@ -164,14 +163,13 @@ class FilterTab:
         for n_i in invisible_widget_set:
             self.widget_dict[n_i].visible = False
 
-
     def calculate_filter(self, event):
         """
         Calculate filter response and plot it.
         :param event: Button click event
         :return: None
         """
-        cutoff = self.cutoff_input_widget.value *\
+        cutoff = self.cutoff_input_widget.value * \
                  gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         self.filter_obj = route_filter_class(type_str=self.select_filter_widget.value,
                                              cutoff=cutoff,
@@ -205,7 +203,6 @@ class FilterTab:
         self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
         self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
 
-
         gain_values = phase_response_values_dict['Gain']
         phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
 
@@ -213,19 +210,12 @@ class FilterTab:
                               'f/fc',
                               'Gain',
                               label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
-                                           logx=True, show_grid=True)
+                                                 logx=True, show_grid=True)
         phase_curve = hv.Curve((values_x.imag, phase_values),
                                'f/fc',
                                'Phase [º]',
                                label='Phase').opts(tools=['hover'], width=500, height=300, logx=True, show_grid=True)
-        vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq',).opts(line_dash='dashed', line_color='black')
+        vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
 
-        self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) *\
+        self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * \
                                  vertical_cutoff_line)
-
-
-
-
-
-
-
