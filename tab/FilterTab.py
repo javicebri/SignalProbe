@@ -87,7 +87,16 @@ class FilterTab:
         self.calculate_button = pn.widgets.Button(name="Calculate", button_type="primary", visible=True)
         self.calculate_button.on_click(self.calculate_filter)
         self.text_hint.value = ''
+
         # Vars
+        self.plot_column = pn.Column(self.normalize_radio_button_group,
+                                     self.plot_pane,
+                                     self.text_f0_gain_value,
+                                     self.text_fc_gain_value,
+                                     self.text_fc_phase_value,
+                                     visible=False,
+                                     styles=dict(background='WhiteSmoke'), width=525)
+
         self.content = pn.Row(
             pn.Column(self.select_ad_widget,
                       self.select_filter_widget,
@@ -99,12 +108,7 @@ class FilterTab:
                       self.calculate_button,
                       self.text_hint,
                       ),
-            pn.Column(self.normalize_radio_button_group,
-                      self.plot_pane,
-                      self.text_f0_gain_value,
-                      self.text_fc_gain_value,
-                      self.text_fc_phase_value,
-                      styles=dict(background='WhiteSmoke'), width=525),
+            self.plot_column,
             width=500)
 
         self.widget_dict = {
@@ -120,7 +124,8 @@ class FilterTab:
             "cutoff_input_widget": self.cutoff_input_widget,
             "order_input_widget": self.order_input_widget,
             "ripple_input_widget": self.ripple_input_widget,
-            "calculate_button": self.calculate_button
+            "calculate_button": self.calculate_button,
+            "plot_column": self.plot_column
         }
 
     def set_select_ad(self, event):
@@ -218,3 +223,5 @@ class FilterTab:
 
         self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * \
                                  vertical_cutoff_line)
+
+        self.plot_column.visible = True
