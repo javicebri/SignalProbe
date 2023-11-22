@@ -122,7 +122,6 @@ class FilterTab:
             "ripple_input_widget": self.ripple_input_widget,
             "calculate_button": self.calculate_button
         }
-        a = 1
 
     def set_select_ad(self, event):
         """
