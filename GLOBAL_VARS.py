@@ -7,6 +7,8 @@ filter_options_dict = {
     "Digital": ["FIR", "IIR"]
 }
 
+FIR_options_list = ["Least-squares", "Minimum phase", "Window method (cutoff)", "Window method (gain)", "Remez"]
+
 Chebyshev_options_list = ["Type I", "Type II"]
 
 frequency_units_dict = {
