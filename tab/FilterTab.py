@@ -327,13 +327,7 @@ class FilterTab:
         else:
             cutoff_list = eval("[" + self.input_cutoff_dig_widget.value + "]")
 
-            cutoff_units = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-            cutoff_list = cutoff_list * cutoff_units
-
-
-            self.text_hint.value = cutoff_list
-
-            cutoff = cutoff_list * \
+            cutoff = np.array(cutoff_list) * \
                      gv.frequency_units_dict[self.select_cutoff_units_widget.value]
             type_str = self.select_filter_widget.value + "_" + self.select_method_widget.value
 
@@ -349,7 +343,7 @@ class FilterTab:
                 self.text_fc_gain_value.visible = True
                 self.text_fc_phase_value.visible = True
                 self.normalize_radio_button_group.visible = False
-                # self.text_hint.value = "Done."
+                self.text_hint.value = "Done."
 
                 scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
                 w, h = self.filter_obj.freq_response()
