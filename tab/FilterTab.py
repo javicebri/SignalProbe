@@ -244,6 +244,10 @@ class FilterTab:
         else:
             pass_zero = gv.yes_no_options[self.radio_pass_zero_widget.value]
 
+        if not (self.input_fs_widget is None):
+            fs_units = gv.frequency_units_dict[self.select_fs_units_widget.value]
+            fs = fs_units * self.input_fs_widget.value
+
         object_vars_dict = {"type_str": type_str,
                             "cutoff": cutoff,
                             "order": self.input_order_widget.value,
@@ -253,7 +257,7 @@ class FilterTab:
                             "window": self.select_window_widget.value,
                             "pass_zero": pass_zero,
                             "scale": scale,
-                            "fs": self.input_fs_widget.value}
+                            "fs": fs}
         return object_vars_dict
 
 
@@ -279,10 +283,10 @@ class FilterTab:
             self.text_hint.value = "Done."
             self.text_hint.value = self.radio_pass_zero_widget.value
 
-            scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-            n_points = max(int(100 * scale), 1000)  # Ensure a min of points
+            freq_units = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+            n_points = max(int(100 * freq_units), 1000)  # Ensure a min of points
             n_points = min(n_points, int(100 * 1e3))
-            end_point = complex(0, cutoff * scale * 10)
+            end_point = complex(0, cutoff * freq_units * 10)
             init_point = complex(0, 0.10)
             values_x = np.geomspace(init_point, end_point, n_points)
 
@@ -322,6 +326,10 @@ class FilterTab:
 
         else:
             cutoff_list = eval("[" + self.input_cutoff_dig_widget.value + "]")
+
+            cutoff_units = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+            cutoff_list = cutoff_list * cutoff_units
+
 
             self.text_hint.value = cutoff_list
 
