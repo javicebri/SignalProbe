@@ -1,6 +1,6 @@
 
 
-tabs_options_list = ["Filter", "Choke"]
+tabs_options_list = ["Filter", "Noise", "Choke"]
 
 filter_options_dict = {
     "Analog": {"Butterworth": {"unique": {"widgets": ["select_ad_widget",
@@ -8,7 +8,8 @@ filter_options_dict = {
                                                       "input_cutoff_widget",
                                                       "select_cutoff_units_widget",
                                                       "input_order_widget",
-                                                      "calculate_button"]}
+                                                      "calculate_button",
+                                                      "text_hint"]}
                                },
                "Chebyshev": {"unique": {"widgets": ["select_ad_widget",
                                                     "select_filter_widget",
@@ -16,16 +17,25 @@ filter_options_dict = {
                                                     "select_cutoff_units_widget",
                                                     "input_order_widget",
                                                     "input_ripple_widget",
-                                                    "calculate_button"]}
+                                                    "calculate_button",
+                                                    "text_hint"]}
                              }
                },
     "Digital": {"FIR": {"Window method (cutoff)": {"widgets": ["select_ad_widget",
                                                                "select_filter_widget",
                                                                "select_method_widget",
-                                                               "input_cutoff_widget",
+                                                               "input_cutoff_dig_widget",
                                                                "select_cutoff_units_widget",
                                                                "input_order_widget",
-                                                               ]},
+                                                               "input_width_widget",
+                                                               "select_window_widget",
+                                                               "radio_pass_zero_widget",
+                                                               "radio_scale_widget",
+                                                               "input_fs_widget",
+                                                               "calculate_button",
+                                                               "text_pass_zero",
+                                                               "text_scale",
+                                                               "text_hint"]},
                         "Window method (gain)": {"widgets": ["select_ad_widget",
                                                              "select_filter_widget",
                                                              "select_method_widget"]},
@@ -58,6 +68,36 @@ filter_options_dict = {
                 }
 }
 
+# Value if need additional input (None if not)
+window_scipy_types_dict = {
+    "boxcar": None,
+    "triang": None,
+    "blackman": None,
+    "hamming": None,
+    "hann": None,
+    "bartlett": None,
+    "flattop": None,
+    "parzen": None,
+    "bohman": None,
+    "blackmanharris": None,
+    "nuttall": None,
+    "barthann": None,
+    "cosine": None,
+    "exponential": None,
+    "tukey": None,
+    "taylor": None,
+    "lanczos": None,
+    "kaiser": ["beta"],
+    "kaiser_bessel_derived": ["beta"],
+    "gaussian": ["std"],
+    "general_cosine": ["w_coeffs"],
+    "general_gaussian": ["needs", "power", "width"],
+    "general_hamming": ["w_coeffs"],
+    "dpss": ["normalized_half-bandwidth"],
+    "chebwin": ["att"]
+
+}
+
 Chebyshev_options_list = ["Type I", "Type II"]
 
 frequency_units_dict = {
@@ -67,3 +107,4 @@ frequency_units_dict = {
 }
 
 normalize_options = ["Yes", "No"]
+yes_no_options = {"Yes": True, "No": False}

@@ -1,10 +1,11 @@
 import numpy as np
+from scipy import signal
 
 class Filter:
-    def __init__(self, cutoff, order, gain=1):
-        self.cutoff = cutoff
-        self.order = order
-        self.gain = gain
+    def __init__(self, object_vars_dict):
+        self.cutoff = object_vars_dict["cutoff"]
+        self.order = object_vars_dict["order"]
+        self.gain = object_vars_dict["gain"]
 
     def type(self):
         pass
@@ -40,8 +41,8 @@ class Filter:
                 'Phase': np.unwrap(np.angle(fr))}
 
 class Butterwoth(Filter):
-    def __init__(self, cutoff, order, gain=1):
-        super().__init__(cutoff, order, gain)
+    def __init__(self, object_vars_dict):
+        super().__init__(object_vars_dict)
 
     def type(self):
         pass
@@ -52,7 +53,6 @@ class Butterwoth(Filter):
         :param s: complex laplace space variable
         :return: complex filter response for s value
         """
-
         n = int(self.order)
         G_0 = self.gain
         B_n = 1
@@ -69,9 +69,10 @@ class Butterwoth(Filter):
 
 
 class Chebyshev(Filter):
-    def __init__(self, cutoff, order, gain=1, ripple=1):
-        super().__init__(cutoff, order, gain)
-        self.ripple = ripple
+    def __init__(self, object_vars_dict):
+        super().__init__(object_vars_dict)
+        self.ripple = object_vars_dict["ripple"]
+
     def type(self):
         pass
 
@@ -114,18 +115,74 @@ class Chebyshev(Filter):
         return G_0 * (A_n/B_n)
 
 
-def route_filter_class(type_str, cutoff, order, gain=1, ripple=1):
+class FirWin(Filter):
+    def __init__(self, object_vars_dict):
+        super().__init__(object_vars_dict)
+        self.numtaps = object_vars_dict["order"] + 1
+        self.pass_zero = bool(object_vars_dict["pass_zero"])
+        self.width = object_vars_dict["width"]
+        self.window = object_vars_dict["window"]
+        self.scale = bool(object_vars_dict["scale"])
+        self.fs = object_vars_dict["fs"]
+    def type(self):
+        pass
+
+    def filter_coefficients(self):
+        """
+        Compute coefficients of the filter
+        :return: list
+        """
+        return signal.firwin(numtaps=self.numtaps,
+                             cutoff=self.cutoff,
+                             width=self.width,
+                             window=self.window,
+                             pass_zero=self.pass_zero,
+                             scale=self.scale,
+                             fs=self.fs)
+    def pole_i(self, i, eps, n):
+        """
+        si pole value
+        :param i: int number of the pole
+        :param eps: float epsilon = srqt(10**r/10 - 1) with r the ripple in dB
+        :param n: int order of the filter
+        :return: complex si
+        """
+        gamma = ((1 + np.sqrt(1 + eps**2)) / eps)**(1/n)
+        sig = (((1/gamma)-gamma)/2) * np.sin(((2*i - 1)*np.pi) / (2*n))
+        omg = (((1/gamma)+gamma)/2) * np.cos(((2*i - 1)*np.pi) / (2*n))
+        return complex(sig, omg)
+
+    def freq_response(self):
+        """
+        Calculate frequency response of the filter in laplace space
+        :param s: complex laplace space variable
+        :return: complex filter response for s value
+        """
+        taps = self.filter_coefficients()
+        w, h = signal.freqz(taps, worN=8000)
+        return w, h
+
+    def gain_phase_response(self, h):
+        """
+        Calculate gain and phase value of the frequency response
+        :param h: The frequency response, as complex numbers
+        :return: dict with gain and phase values
+        """
+        return {'Gain': np.abs(h),
+                'Phase': np.unwrap(np.angle(h))}
+
+
+def route_filter_class(object_vars_dict):
     """
     Create a filter of the selected class in the panel
-    :param type_str: str with filter type
-    :param cutoff: float with cutoff frequency
-    :param order: int with the filter order
-    :param gain: float with filter gain value
-    :param ripple: float ripple in dB
+    :param object_vars_dict: dictionary with the variables
     :return: object of the selected class
     """
+    type_str = object_vars_dict["type_str"]
     if type_str == "Butterworth":
-        filter_obj = Butterwoth(cutoff, order, gain)
+        filter_obj = Butterwoth(object_vars_dict)
     elif type_str == "Chebyshev":
-        filter_obj = Chebyshev(cutoff, order, gain, ripple)
+        filter_obj = Chebyshev(object_vars_dict)
+    elif type_str == "FIR_Window method (cutoff)":
+        filter_obj = FirWin(object_vars_dict)
     return filter_obj

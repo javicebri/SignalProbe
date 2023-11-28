@@ -5,6 +5,8 @@ import numpy as np
 import GLOBAL_VARS as gv
 from tab import FilterTab
 from tab import ChokeTab
+from tab import NoiseTab
+
 
 
 hv.extension('bokeh')
@@ -21,12 +23,15 @@ class SigProbe:
         # Vars
         self.filter_tab = FilterTab.FilterTab()
         self.choke_tab = pn.Column()
+        self.noise_tab = pn.Column()
+
 
     def view(self):
         return pn.Column(
             pn.Row(self.text_title, self.imagen_pane),
             pn.Tabs(
                 ("Filter", self.filter_tab.content),
+                ("Noise", self.noise_tab),
                 ("Choke", self.choke_tab),
             )
         )
