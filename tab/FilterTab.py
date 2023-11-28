@@ -81,6 +81,11 @@ class FilterTab:
         self.text_fc_gain_value = pn.widgets.StaticText(name='Gain fc', value='', visible=False)
         self.text_fc_phase_value = pn.widgets.StaticText(name='Phase fc', value='', visible=False)
         self.text_hint.value = "Select A/D and type of filter."
+        self.text_cutoff_help = pn.widgets.StaticText(name='Note', value='Low pass: i.e. 1000 with Pass zero True \n' +
+                                                                          'High pass: i.e. 1000 with Pass zero False \n' +
+                                                                          'Pass band: i.e. 100, 150 \n' +
+                                                                          'Multi Pass band: i.e. 100, 150, 200, 250 '
+                                                      , visible=False)
         self.text_pass_zero = pn.widgets.StaticText(name='Pass Zero', value='', visible=False)
         self.text_scale = pn.widgets.StaticText(name='Scale', value='', visible=False)
 
@@ -149,6 +154,7 @@ class FilterTab:
             "text_fc_phase_value": self.text_fc_phase_value,
             "text_pass_zero": self.text_pass_zero,
             "text_scale": self.text_scale,
+            "text_cutoff_help": self.text_cutoff_help,
             "input_cutoff_widget": self.input_cutoff_widget,
             "input_cutoff_dig_widget": self.input_cutoff_dig_widget,
             "input_order_widget": self.input_order_widget,
@@ -169,6 +175,7 @@ class FilterTab:
                       pn.Row(self.input_cutoff_widget,
                              self.input_cutoff_dig_widget,
                              self.select_cutoff_units_widget),
+                      self.text_cutoff_help,
                       self.input_order_widget,
                       self.text_pass_zero,
                       self.radio_pass_zero_widget,
