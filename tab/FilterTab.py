@@ -231,9 +231,6 @@ class FilterTab:
         for n_i in invisible_widget_set:
             self.widget_dict[n_i].visible = False
 
-    def set_radio_value(self, radio_widget):
-        self.text_hint.value = gv.yes_no_options[radio_widget.value]
-        radio_widget.value = gv.yes_no_options[radio_widget.value]
     def get_vars_dict(self, type_str, cutoff):
         """
         Get vars dict to create objects
