@@ -319,8 +319,7 @@ class FilterTab:
                                                        show_grid=True)
             vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
 
-            self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * \
-                                     vertical_cutoff_line)
+            self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line)
 
             self.plot_column.visible = True
 
@@ -376,8 +375,7 @@ class FilterTab:
                                                            show_grid=True)
                 vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
 
-                self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * \
-                                         vertical_cutoff_line)
+                self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line)
 
                 self.plot_column.visible = True
 
