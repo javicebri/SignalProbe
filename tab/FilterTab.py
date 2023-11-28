@@ -57,7 +57,11 @@ class FilterTab:
                                                             align="end",
                                                             width=60)
         # self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
-
+        self.select_fs_units_widget = pn.widgets.Select(options=frequency_units_list,
+                                                        value=frequency_units_list[0],
+                                                        visible=False,
+                                                        align="end",
+                                                        width=60)
         self.normalize_radio_button_group = pn.widgets.RadioButtonGroup(options=gv.normalize_options,
                                                                         value=gv.normalize_options[0],
                                                                         name='Normalize',
@@ -135,6 +139,7 @@ class FilterTab:
             "select_method_widget": self.select_method_widget,
             "select_cutoff_units_widget": self.select_cutoff_units_widget,
             "select_window_widget": self.select_window_widget,
+            "select_fs_units_widget": self.select_fs_units_widget,
             "normalize_radio_button_group": self.normalize_radio_button_group,
             "radio_pass_zero_widget": self.radio_pass_zero_widget,
             "radio_scale_widget": self.radio_scale_widget,
@@ -156,7 +161,7 @@ class FilterTab:
 
         self.set_visible_widgets(self.select_filter_widget.value)
 
-        self.content = pn.Row(
+        self.content = pn.Column(pn.Row(
             pn.Column(self.select_ad_widget,
                       self.select_filter_widget,
                       self.select_method_widget,
@@ -170,12 +175,13 @@ class FilterTab:
                       self.text_scale,
                       self.radio_scale_widget,
                       self.input_ripple_widget,
-                      self.input_fs_widget,
+                      pn.Row(self.input_fs_widget,
+                             self.select_fs_units_widget),
                       self.calculate_button,
-                      self.text_hint,
                       ),
             self.plot_column,
-            width=500)
+            width=1500),
+            pn.Column(self.text_hint))
 
 
     def set_select_ad(self, event):

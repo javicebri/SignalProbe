@@ -26,6 +26,7 @@ filter_options_dict = {
                                                                "select_method_widget",
                                                                "input_cutoff_dig_widget",
                                                                "select_cutoff_units_widget",
+                                                               "select_fs_units_widget",
                                                                "input_order_widget",
                                                                "input_width_widget",
                                                                "select_window_widget",
