@@ -334,6 +334,8 @@ class FilterTab:
             object_vars_dict = self.get_vars_dict(type_str, cutoff)
             if len(cutoff_list) == 1 and not object_vars_dict["pass_zero"] and not object_vars_dict["order"]%2 == 0:
                 self.text_hint.value = "Order must be even if filter is high pass (pass zero = No)"
+            elif np.max(cutoff) > object_vars_dict["fs"]/2:
+                self.text_hint.value = "Cutoff frequency must be minor than fs/2"
             else:
                 fs = object_vars_dict['fs']
 
