@@ -166,11 +166,17 @@ class FirWin(Filter):
     def __calc_zeros_poles__(self, ):
         pass
 
-    def get_gain(self):
-        return self.result_gain
+    def get_gain(self, log=False):
+        if log:
+            return 20 * np.log(self.result_gain)
+        else:
+            return self.result_gain
 
-    def get_phase(self):
-        return self.result_phase
+    def get_phase(self, deg=False):
+        if deg:
+            return self.result_phase * (180 / np.pi)
+        else:
+            return self.result_phase
 
     def get_filter_coeff(self):
         return self.taps
@@ -180,6 +186,9 @@ class FirWin(Filter):
 
     def get_w_axis(self):
         return self.w
+
+    def get_freq_axis(self):
+        return (self.w / (2 * np.pi)) * self.fs
 
 
 

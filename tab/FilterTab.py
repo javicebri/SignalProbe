@@ -379,30 +379,27 @@ class FilterTab:
 
             scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
 
-            # phase_response_values_dict = self.filter_obj.calc_gain_phase_response(h)
-
             # self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
             # self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
             # self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
 
-            gain_values = self.filter_obj.get_gain()
-            phase_values = self.filter_obj.get_phase() * (180 / np.pi)  # In deg
-
-            w = self.filter_obj.get_w_axis()
+            gain_values = self.filter_obj.get_gain(log=False)
+            phase_values = self.filter_obj.get_phase(deg=True)  # In deg
 
             # Log axis does not allow values < 0.01
-            index_w = np.where(w >= 0.01)[0]
-            w = w[index_w]
+            # w = self.filter_obj.get_angular_axis()
+            f_axis = self.filter_obj.get_freq_axis()
+            index_f = np.where(f_axis >= 0.01)[0]
+            f_axis = f_axis[index_f]
+            gain_values = gain_values[index_f]
+            phase_values = phase_values[index_f]
 
-            gain_values = gain_values[index_w]
-            phase_values = phase_values[index_w]
-
-            gain_curve = hv.Curve(((w / (2 * np.pi)) * fs, gain_values),
+            gain_curve = hv.Curve((f_axis, gain_values),
                                   'f',
                                   'Gain',
                                   label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
                                                      logx=True, show_grid=True)
-            phase_curve = hv.Curve(((w / (2 * np.pi)) * fs, phase_values),
+            phase_curve = hv.Curve((f_axis, phase_values),
                                    'f',
                                    'Phase [º]',
                                    label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
