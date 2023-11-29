@@ -56,7 +56,6 @@ class FilterTab:
                                                             visible=False,
                                                             align="end",
                                                             width=60)
-        # self.imagen_pane = pn.panel("icon.png", width=60, height=60, align="center")
         self.select_fs_units_widget = pn.widgets.Select(options=frequency_units_list,
                                                         value=frequency_units_list[0],
                                                         visible=False,
@@ -95,7 +94,7 @@ class FilterTab:
                                                          start=0.1,
                                                          visible=False,
                                                          width=100)
-        # input_cutoff_dig_widget Allows a list of frequencies for digital filters
+        # input_cutoff_dig_widget Allows a list of frequencies for digital filters (as scipy argument)
         self.input_cutoff_dig_widget = pn.widgets.TextInput(name='Cutoff frequency',
                                                             visible=False,
                                                             width=100)
@@ -137,7 +136,7 @@ class FilterTab:
                                      self.text_fc_phase_value,
                                      visible=False,
                                      styles=dict(background='WhiteSmoke'), width=525)
-
+        # Dictionary with all the widgets to make them visible or not
         self.widget_dict = {
             "select_ad_widget": self.select_ad_widget,
             "select_filter_widget": self.select_filter_widget,
@@ -164,7 +163,7 @@ class FilterTab:
             "calculate_button": self.calculate_button,
             "plot_column": self.plot_column
         }
-
+        # To make them visible or not
         self.set_visible_widgets(self.select_filter_widget.value)
 
         self.content = pn.Column(pn.Row(
@@ -193,7 +192,7 @@ class FilterTab:
 
     def set_select_ad(self, event):
         """
-        Selector of Analog or Digital
+        Selector of Analog or Digital, change the selector of filter list
         :param event: scroll selector event
         :return: None
         """
@@ -380,9 +379,12 @@ class FilterTab:
                                        'Phase [º]',
                                        label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
                                                            show_grid=True)
-                vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
+                self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary])
 
-                self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line)
+                for i, cutoff_i in enumerate(cutoff):
+                    vertical_cutoff_line = hv.VLine(x=cutoff_i, label='Cutoff freq').opts(line_dash='dashed',
+                                                                                          line_color='black')
+                    self.plot_pane.object *= vertical_cutoff_line
 
                 self.plot_column.visible = True
 
