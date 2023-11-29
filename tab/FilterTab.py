@@ -22,6 +22,7 @@ class FilterTab:
         self.method_list = [None]
         self.window_dig_list = list(gv.window_scipy_types_dict.keys())
         self.plot_pane = pn.pane.HoloViews()
+        self.plot_polar = pn.pane.HoloViews()
 
         ad_list = list(gv.filter_options_dict.keys())
         frequency_units_list = list(gv.frequency_units_dict.keys())
@@ -145,6 +146,12 @@ class FilterTab:
                                      visible=False,
                                      styles=dict(background='WhiteSmoke'), width=525)
 
+        self.plot_polar_column = pn.Column(self.plot_polar,
+                                           visible=False,
+                                           styles=dict(background='WhiteSmoke'), width=525)
+
+
+
         # Dictionary with all the widgets to make them visible or not
         self.widget_dict = {
             "select_ad_widget": self.select_ad_widget,
@@ -170,7 +177,8 @@ class FilterTab:
             "input_width_widget": self.input_width_widget,
             "input_fs_widget": self.input_fs_widget,
             "calculate_button": self.calculate_button,
-            "plot_column": self.plot_column
+            "plot_column": self.plot_column,
+            "plot_polar_column": self.plot_polar_column
         }
         # Make them visible or not
         self.set_visible_widgets(self.select_filter_widget.value)
@@ -198,6 +206,7 @@ class FilterTab:
                       self.calculate_button,
                       ),
             self.plot_column,
+            self.plot_polar_column,
             width=1500),
             pn.Column(self.text_hint))
 
@@ -307,8 +316,6 @@ class FilterTab:
         self.text_fc_gain_value.visible = True
         self.text_fc_phase_value.visible = True
         self.normalize_radio_button_group.visible = False
-        self.text_hint.value = "Done."
-        self.text_hint.value = self.radio_pass_zero_widget.value
 
         freq_units = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
         n_points = max(int(100 * freq_units), 1000)  # Ensure a min of points
@@ -350,6 +357,8 @@ class FilterTab:
 
         self.plot_column.visible = True
 
+        self.text_hint.value = "Done."
+
     def plot_digital(self):
         """
         Plot digital type filters
@@ -375,13 +384,14 @@ class FilterTab:
             self.text_fc_gain_value.visible = False
             self.text_fc_phase_value.visible = False
             self.normalize_radio_button_group.visible = False
-            self.text_hint.value = "Done."
 
             scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
 
             # self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
             # self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
             # self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
+
+            # GAIN PHASE PLOT
 
             gain_values = self.filter_obj.get_gain(log=False)
             phase_values = self.filter_obj.get_phase(deg=True)  # In deg
@@ -412,6 +422,60 @@ class FilterTab:
                 self.plot_pane.object *= vertical_cutoff_line
 
             self.plot_column.visible = True
+
+
+            # ZERO POLE PLOT
+            zeros = self.filter_obj.get_zeros()
+            poles = self.filter_obj.get_poles()
+
+            hv.extension('matplotlib')
+
+            scatter_zeros = None
+            if len(zeros) > 0:
+                r_zeros = np.abs(zeros)
+                theta_zeros = np.angle(zeros)
+                scatter_zeros = hv.Scatter((theta_zeros, r_zeros), 'theta', 'r')
+                scatter = scatter_zeros.options(projection='polar',
+                                                show_grid=True,
+                                                marker='o',
+                                                color='b',
+                                                title='Zero-Pole Plot',
+                                                xlabel=None, ylabel=None)
+
+            scatter_poles = None
+            if len(poles) > 0:
+                r_poles = np.abs(poles)
+                theta_poles = np.angle(poles)
+                scatter_poles = hv.Scatter((theta_poles, r_poles), 'theta', 'r')
+                scatter_poles = scatter_poles.options(projection='polar',
+                                                      show_grid=True,
+                                                      marker='x',
+                                                      color='r',
+                                                      xlabel=None, ylabel=None)
+                scatter = scatter_zeros * scatter_poles
+
+            theta_unit = np.arange(0, 2*np.pi, 0.1)
+            r_unit = np.ones(len(theta_unit))
+            scatter_unit = hv.Curve((theta_unit, r_unit), 'theta', 'r').options(projection='polar',
+                                                                                show_grid=True,
+                                                                                color='lightblue',
+                                                                                xlabel=None, ylabel=None)
+            scatter *= scatter_unit
+            scatter = scatter.opts(width=500, height=300)
+            import matplotlib.pyplot as plt
+            scatter = hv.plotting.mpl.to_mpl().set_size_inches(8, 8)
+            #
+            # scatter = scatter.options(title='Zero-Pole Plot',
+            #                           width=500,
+            #                           height=300)
+
+            # Muestra el plot
+            self.plot_polar.object = scatter
+            self.plot_polar_column.visible = True
+
+            self.text_hint.value = zeros
+
+
 
 
 

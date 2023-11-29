@@ -126,10 +126,12 @@ class FirWin(Filter):
         self.fs = object_vars_dict["fs"]
         self.taps = self.w = self.h = None  # coefficients, w x axis and filter response
         self.result_gain = self.result_phase = None
+        self.zeros = self.poles = self.sys_gain = None
 
         self.__calc_filter_coefficients__()
         self.__calc_freq_response__()
         self.__calc_gain_phase_response__()
+        self.__calc_zeros_poles__()
 
     def type(self):
         pass
@@ -163,8 +165,17 @@ class FirWin(Filter):
         self.result_gain = np.abs(self.h)
         self.result_phase = np.unwrap(np.angle(self.h))
 
-    def __calc_zeros_poles__(self, ):
-        pass
+    def __calc_zeros_poles__(self):
+        self.zeros, self.poles, self.sys_gain = signal.tf2zpk(self.taps,1)
+
+    def get_zeros(self):
+        return self.zeros
+
+    def get_poles(self):
+        return self.poles
+
+    def get_sys_gain(self):
+        return self.sys_gain
 
     def get_gain(self, log=False):
         if log:
