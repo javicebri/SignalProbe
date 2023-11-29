@@ -274,119 +274,133 @@ class FilterTab:
         :return: None
         """
         if self.select_ad_widget.value == "Analog":
-            cutoff = self.input_cutoff_widget.value * \
-                     gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-            type_str = self.select_filter_widget.value
+           self.plot_analog()
 
-            object_vars_dict = self.get_vars_dict(type_str, cutoff)
+        else:
+            self.plot_digital()
+
+    def plot_analog(self):
+        """
+        Plot analog type filters
+        :return: None
+        """
+        cutoff = self.input_cutoff_widget.value * \
+                 gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+        type_str = self.select_filter_widget.value
+
+        object_vars_dict = self.get_vars_dict(type_str, cutoff)
+
+        self.filter_obj = route_filter_class(object_vars_dict)
+
+        self.text_f0_gain_value.visible = True
+        self.text_fc_gain_value.visible = True
+        self.text_fc_phase_value.visible = True
+        self.normalize_radio_button_group.visible = False
+        self.text_hint.value = "Done."
+        self.text_hint.value = self.radio_pass_zero_widget.value
+
+        freq_units = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+        n_points = max(int(100 * freq_units), 1000)  # Ensure a min of points
+        n_points = min(n_points, int(100 * 1e3))
+        end_point = complex(0, cutoff * freq_units * 10)
+        init_point = complex(0, 0.10)
+        values_x = np.geomspace(init_point, end_point, n_points)
+
+        if self.normalize_radio_button_group.value == "Yes":
+            values_x = values_x / cutoff
+            w_cutoff = 1j
+        else:
+            w_cutoff = 2 * np.pi * cutoff
+
+        phase_response_0_dict = self.filter_obj.gain_phase_response(np.array([0j]))
+        phase_response_cutoff_dict = self.filter_obj.gain_phase_response(np.array([w_cutoff]))
+        phase_response_values_dict = self.filter_obj.gain_phase_response(values_x)
+
+        self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
+        self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
+        self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
+
+        gain_values = phase_response_values_dict['Gain']
+        phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
+
+        gain_curve = hv.Curve((values_x.imag, gain_values),
+                              'f/fc',
+                              'Gain',
+                              label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
+                                                 logx=True, show_grid=True)
+        phase_curve = hv.Curve((values_x.imag, phase_values),
+                               'f/fc',
+                               'Phase [º]',
+                               label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
+                                                   show_grid=True)
+        vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
+
+        self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line)
+
+        self.plot_column.visible = True
+
+    def plot_digital(self):
+        """
+        Plot digital type filters
+        :return: None
+        """
+        cutoff_list = eval("[" + self.input_cutoff_dig_widget.value + "]")
+
+        cutoff = np.array(cutoff_list) * \
+                 gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+        type_str = self.select_filter_widget.value + "_" + self.select_method_widget.value
+
+        object_vars_dict = self.get_vars_dict(type_str, cutoff)
+        if len(cutoff_list) == 1 and not object_vars_dict["pass_zero"] and not object_vars_dict["order"] % 2 == 0:
+            self.text_hint.value = "Order must be even if filter is high pass (pass zero = No)"
+        elif np.max(cutoff) > object_vars_dict["fs"] / 2:
+            self.text_hint.value = "Cutoff frequency must be minor than fs/2"
+        else:
+            fs = object_vars_dict['fs']
 
             self.filter_obj = route_filter_class(object_vars_dict)
 
-            self.text_f0_gain_value.visible = True
-            self.text_fc_gain_value.visible = True
-            self.text_fc_phase_value.visible = True
+            self.text_f0_gain_value.visible = False
+            self.text_fc_gain_value.visible = False
+            self.text_fc_phase_value.visible = False
             self.normalize_radio_button_group.visible = False
             self.text_hint.value = "Done."
-            self.text_hint.value = self.radio_pass_zero_widget.value
 
-            freq_units = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-            n_points = max(int(100 * freq_units), 1000)  # Ensure a min of points
-            n_points = min(n_points, int(100 * 1e3))
-            end_point = complex(0, cutoff * freq_units * 10)
-            init_point = complex(0, 0.10)
-            values_x = np.geomspace(init_point, end_point, n_points)
+            scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
+            w, h = self.filter_obj.freq_response()
 
-            if self.normalize_radio_button_group.value == "Yes":
-                values_x = values_x / cutoff
-                w_cutoff = 1j
-            else:
-                w_cutoff = 2 * np.pi * cutoff
+            # Log axis doesnt allow < 0.01
+            index_w = np.where(w >= 0.01)[0]
+            w = w[index_w]
+            h = h[index_w]
 
-            phase_response_0_dict = self.filter_obj.gain_phase_response(np.array([0j]))
-            phase_response_cutoff_dict = self.filter_obj.gain_phase_response(np.array([w_cutoff]))
-            phase_response_values_dict = self.filter_obj.gain_phase_response(values_x)
+            phase_response_values_dict = self.filter_obj.gain_phase_response(h)
 
-            self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
-            self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
-            self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
+            # self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
+            # self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
+            # self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
 
             gain_values = phase_response_values_dict['Gain']
             phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
 
-            gain_curve = hv.Curve((values_x.imag, gain_values),
-                                  'f/fc',
+            gain_curve = hv.Curve(((w / (2 * np.pi)) * fs, gain_values),
+                                  'f',
                                   'Gain',
                                   label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
                                                      logx=True, show_grid=True)
-            phase_curve = hv.Curve((values_x.imag, phase_values),
-                                   'f/fc',
+            phase_curve = hv.Curve(((w / (2 * np.pi)) * fs, phase_values),
+                                   'f',
                                    'Phase [º]',
                                    label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
                                                        show_grid=True)
-            vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
+            self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary])
 
-            self.plot_pane.object = (gain_curve * phase_curve.opts(hooks=[plot_secondary]) * vertical_cutoff_line)
+            for i, cutoff_i in enumerate(cutoff):
+                vertical_cutoff_line = hv.VLine(x=cutoff_i, label='Cutoff freq').opts(line_dash='dashed',
+                                                                                      line_color='black')
+                self.plot_pane.object *= vertical_cutoff_line
 
             self.plot_column.visible = True
-
-        else:
-            cutoff_list = eval("[" + self.input_cutoff_dig_widget.value + "]")
-
-            cutoff = np.array(cutoff_list) * \
-                     gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-            type_str = self.select_filter_widget.value + "_" + self.select_method_widget.value
-
-            object_vars_dict = self.get_vars_dict(type_str, cutoff)
-            if len(cutoff_list) == 1 and not object_vars_dict["pass_zero"] and not object_vars_dict["order"]%2 == 0:
-                self.text_hint.value = "Order must be even if filter is high pass (pass zero = No)"
-            elif np.max(cutoff) > object_vars_dict["fs"]/2:
-                self.text_hint.value = "Cutoff frequency must be minor than fs/2"
-            else:
-                fs = object_vars_dict['fs']
-
-                self.filter_obj = route_filter_class(object_vars_dict)
-
-                self.text_f0_gain_value.visible = True
-                self.text_fc_gain_value.visible = True
-                self.text_fc_phase_value.visible = True
-                self.normalize_radio_button_group.visible = False
-                self.text_hint.value = "Done."
-
-                scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-                w, h = self.filter_obj.freq_response()
-
-                #Log axis doesnt allow < 0.01
-                index_w = np.where(w >= 0.01)[0]
-                w = w[index_w]
-                h = h[index_w]
-
-                phase_response_values_dict = self.filter_obj.gain_phase_response(h)
-
-                # self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
-                # self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
-                # self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
-
-                gain_values = phase_response_values_dict['Gain']
-                phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
-
-                gain_curve = hv.Curve(((w/(2*np.pi))*fs, gain_values),
-                                      'f',
-                                      'Gain',
-                                      label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
-                                                         logx=True, show_grid=True)
-                phase_curve = hv.Curve(((w/(2*np.pi))*fs, phase_values),
-                                       'f',
-                                       'Phase [º]',
-                                       label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
-                                                           show_grid=True)
-                self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary])
-
-                for i, cutoff_i in enumerate(cutoff):
-                    vertical_cutoff_line = hv.VLine(x=cutoff_i, label='Cutoff freq').opts(line_dash='dashed',
-                                                                                          line_color='black')
-                    self.plot_pane.object *= vertical_cutoff_line
-
-                self.plot_column.visible = True
 
 
 
