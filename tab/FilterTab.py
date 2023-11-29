@@ -323,9 +323,9 @@ class FilterTab:
         else:
             w_cutoff = 2 * np.pi * cutoff
 
-        phase_response_0_dict = self.filter_obj.gain_phase_response(np.array([0j]))
-        phase_response_cutoff_dict = self.filter_obj.gain_phase_response(np.array([w_cutoff]))
-        phase_response_values_dict = self.filter_obj.gain_phase_response(values_x)
+        phase_response_0_dict = self.filter_obj.calc_gain_phase_response(np.array([0j]))
+        phase_response_cutoff_dict = self.filter_obj.calc_gain_phase_response(np.array([w_cutoff]))
+        phase_response_values_dict = self.filter_obj.calc_gain_phase_response(values_x)
 
         self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
         self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
@@ -378,21 +378,24 @@ class FilterTab:
             self.text_hint.value = "Done."
 
             scale = gv.frequency_units_dict[self.select_cutoff_units_widget.value]
-            w, h = self.filter_obj.freq_response()
 
-            # Log axis doesnt allow < 0.01
-            index_w = np.where(w >= 0.01)[0]
-            w = w[index_w]
-            h = h[index_w]
-
-            phase_response_values_dict = self.filter_obj.gain_phase_response(h)
+            # phase_response_values_dict = self.filter_obj.calc_gain_phase_response(h)
 
             # self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
             # self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
             # self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
 
-            gain_values = phase_response_values_dict['Gain']
-            phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
+            gain_values = self.filter_obj.get_gain()
+            phase_values = self.filter_obj.get_phase() * (180 / np.pi)  # In deg
+
+            w = self.filter_obj.get_w_axis()
+
+            # Log axis does not allow values < 0.01
+            index_w = np.where(w >= 0.01)[0]
+            w = w[index_w]
+
+            gain_values = gain_values[index_w]
+            phase_values = phase_values[index_w]
 
             gain_curve = hv.Curve(((w / (2 * np.pi)) * fs, gain_values),
                                   'f',

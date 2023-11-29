@@ -89,7 +89,7 @@ class Chebyshev(Filter):
         omg = (((1/gamma)+gamma)/2) * np.cos(((2*i - 1)*np.pi) / (2*n))
         return complex(sig, omg)
 
-    def freq_response(self, s):
+    def calc_freq_response(self, s):
         """
         Calculate frequency response of the filter in laplace space
         :param s: complex laplace space variable
@@ -124,52 +124,64 @@ class FirWin(Filter):
         self.window = object_vars_dict["window"]
         self.scale = bool(object_vars_dict["scale"])
         self.fs = object_vars_dict["fs"]
+        self.taps = self.w = self.h = None  # coefficients, w x axis and filter response
+        self.result_gain = self.result_phase = None
+
+        self.__calc_filter_coefficients__()
+        self.__calc_freq_response__()
+        self.__calc_gain_phase_response__()
+
     def type(self):
         pass
 
-    def filter_coefficients(self):
+    def __calc_filter_coefficients__(self):
         """
         Compute coefficients of the filter
-        :return: list
+        :return: None
         """
-        return signal.firwin(numtaps=self.numtaps,
-                             cutoff=self.cutoff,
-                             width=self.width,
-                             window=self.window,
-                             pass_zero=self.pass_zero,
-                             scale=self.scale,
-                             fs=self.fs)
-    def pole_i(self, i, eps, n):
-        """
-        si pole value
-        :param i: int number of the pole
-        :param eps: float epsilon = srqt(10**r/10 - 1) with r the ripple in dB
-        :param n: int order of the filter
-        :return: complex si
-        """
-        gamma = ((1 + np.sqrt(1 + eps**2)) / eps)**(1/n)
-        sig = (((1/gamma)-gamma)/2) * np.sin(((2*i - 1)*np.pi) / (2*n))
-        omg = (((1/gamma)+gamma)/2) * np.cos(((2*i - 1)*np.pi) / (2*n))
-        return complex(sig, omg)
+        self.taps = signal.firwin(numtaps=self.numtaps,
+                                  cutoff=self.cutoff,
+                                  width=self.width,
+                                  window=self.window,
+                                  pass_zero=self.pass_zero,
+                                  scale=self.scale,
+                                  fs=self.fs)
 
-    def freq_response(self):
+    def __calc_freq_response__(self):
         """
-        Calculate frequency response of the filter in laplace space
-        :param s: complex laplace space variable
-        :return: complex filter response for s value
+        Calculate frequency response of the filter with filter coefficients
+        :return: None
         """
-        taps = self.filter_coefficients()
-        w, h = signal.freqz(taps, worN=8000)
-        return w, h
+        self.__calc_filter_coefficients__()
+        self.w, self.h = signal.freqz(self.taps, worN=8000)
 
-    def gain_phase_response(self, h):
+    def __calc_gain_phase_response__(self):
         """
         Calculate gain and phase value of the frequency response
-        :param h: The frequency response, as complex numbers
-        :return: dict with gain and phase values
+        :return: None
         """
-        return {'Gain': np.abs(h),
-                'Phase': np.unwrap(np.angle(h))}
+        self.result_gain = np.abs(self.h)
+        self.result_phase = np.unwrap(np.angle(self.h))
+
+    def __calc_zeros_poles__(self, ):
+        pass
+
+    def get_gain(self):
+        return self.result_gain
+
+    def get_phase(self):
+        return self.result_phase
+
+    def get_filter_coeff(self):
+        return self.taps
+
+    def get_frequency_response(self):
+        return self.h
+
+    def get_w_axis(self):
+        return self.w
+
+
 
 
 def route_filter_class(object_vars_dict):
