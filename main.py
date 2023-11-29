@@ -8,7 +8,6 @@ from tab import ChokeTab
 from tab import NoiseTab
 
 
-
 hv.extension('bokeh')
 pn.extension()
 

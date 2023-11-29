@@ -1,5 +1,7 @@
 import panel as pn
 import holoviews as hv
+import matplotlib.pyplot as plt
+
 from bokeh.models import GlyphRenderer, LinearAxis, LinearScale, Range1d
 
 import pandas as pd
@@ -22,7 +24,14 @@ class FilterTab:
         self.method_list = [None]
         self.window_dig_list = list(gv.window_scipy_types_dict.keys())
         self.plot_pane = pn.pane.HoloViews()
-        self.plot_polar = pn.pane.HoloViews()
+
+        from matplotlib.figure import Figure
+        pn.extension()
+
+        fig1 = Figure()
+        ax1 = fig1.subplots()
+        ax1.plot([1, 2, 3], [1, 2, 3])
+        self.plot_polar = pn.pane.Matplotlib(fig1, dpi=144)
 
         ad_list = list(gv.filter_options_dict.keys())
         frequency_units_list = list(gv.frequency_units_dict.keys())
@@ -86,9 +95,9 @@ class FilterTab:
         self.text_fc_phase_value = pn.widgets.StaticText(name='Phase fc', value='', visible=False)
         self.text_hint.value = "Select A/D and type of filter."
         self.text_cutoff_help = pn.widgets.StaticText(name='Note', value='Low pass: i.e. 1000 with Pass zero True \n' +
-                                                                          'High pass: i.e. 1000 with Pass zero False \n' +
-                                                                          'Pass band: i.e. 100, 150 \n' +
-                                                                          'Multi Pass band: i.e. 100, 150, 200, 250 '
+                                                                         'High pass: i.e. 1000 with Pass zero False \n' +
+                                                                         'Pass band: i.e. 100, 150 \n' +
+                                                                         'Multi Pass band: i.e. 100, 150, 200, 250 '
                                                       , visible=False)
         self.text_pass_zero = pn.widgets.StaticText(name='Pass Zero', value='', visible=False)
         self.text_scale = pn.widgets.StaticText(name='Scale', value='', visible=False)
@@ -144,13 +153,11 @@ class FilterTab:
                                      self.text_fc_gain_value,
                                      self.text_fc_phase_value,
                                      visible=False,
-                                     styles=dict(background='WhiteSmoke'), width=525)
+                                     styles=dict(background='WhiteSmoke'), width=700)
 
         self.plot_polar_column = pn.Column(self.plot_polar,
                                            visible=False,
-                                           styles=dict(background='WhiteSmoke'), width=525)
-
-
+                                           styles=dict(background='WhiteSmoke'), width=700)
 
         # Dictionary with all the widgets to make them visible or not
         self.widget_dict = {
@@ -207,9 +214,8 @@ class FilterTab:
                       ),
             self.plot_column,
             self.plot_polar_column,
-            width=1500),
+            width=2500),
             pn.Column(self.text_hint))
-
 
     def set_select_ad(self, event):
         """
@@ -294,8 +300,7 @@ class FilterTab:
         :return: None
         """
         if self.select_ad_widget.value == "Analog":
-           self.plot_analog()
-
+            self.plot_analog()
         else:
             self.plot_digital()
 
@@ -404,15 +409,25 @@ class FilterTab:
             gain_values = gain_values[index_f]
             phase_values = phase_values[index_f]
 
+            dpi = 100
+            width_inches = 5
+            height_inches = 3
+
             gain_curve = hv.Curve((f_axis, gain_values),
                                   'f',
                                   'Gain',
-                                  label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
+                                  label='Gain').opts(tools=['hover'],
+                                                     width=int(width_inches * dpi),
+                                                     height=int(height_inches * dpi),
+                                                     title='Bode Plot',
                                                      logx=True, show_grid=True)
             phase_curve = hv.Curve((f_axis, phase_values),
                                    'f',
                                    'Phase [º]',
-                                   label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
+                                   label='Phase').opts(tools=['hover'],
+                                                       width=int(width_inches * dpi),
+                                                       height=int(height_inches * dpi),
+                                                       logx=True,
                                                        show_grid=True)
             self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary])
 
@@ -423,60 +438,40 @@ class FilterTab:
 
             self.plot_column.visible = True
 
-
             # ZERO POLE PLOT
+            import matplotlib
+
+            # Configurar el backend de Matplotlib
+            plt.switch_backend('agg')
+            # Activar la extensión de Matplotlib en Panel
+            pn.extension('matplotlib')
+
             zeros = self.filter_obj.get_zeros()
             poles = self.filter_obj.get_poles()
 
-            hv.extension('matplotlib')
+            fig0, ax0 = plt.subplots(subplot_kw={'projection': 'polar'},
+                                     figsize=(width_inches, height_inches), dpi=dpi)
 
-            scatter_zeros = None
             if len(zeros) > 0:
                 r_zeros = np.abs(zeros)
                 theta_zeros = np.angle(zeros)
-                scatter_zeros = hv.Scatter((theta_zeros, r_zeros), 'theta', 'r')
-                scatter = scatter_zeros.options(projection='polar',
-                                                show_grid=True,
-                                                marker='o',
-                                                color='b',
-                                                title='Zero-Pole Plot',
-                                                xlabel=None, ylabel=None)
+                strm = ax0.scatter(theta_zeros, r_zeros, marker='o', color='b')
 
-            scatter_poles = None
             if len(poles) > 0:
                 r_poles = np.abs(poles)
                 theta_poles = np.angle(poles)
-                scatter_poles = hv.Scatter((theta_poles, r_poles), 'theta', 'r')
-                scatter_poles = scatter_poles.options(projection='polar',
-                                                      show_grid=True,
-                                                      marker='x',
-                                                      color='r',
-                                                      xlabel=None, ylabel=None)
-                scatter = scatter_zeros * scatter_poles
+                strm = ax0.scatter(theta_poles, r_poles, marker='x', color='r')
 
-            theta_unit = np.arange(0, 2*np.pi, 0.1)
+            theta_unit = np.arange(0, 2 * np.pi, 0.1)
             r_unit = np.ones(len(theta_unit))
-            scatter_unit = hv.Curve((theta_unit, r_unit), 'theta', 'r').options(projection='polar',
-                                                                                show_grid=True,
-                                                                                color='lightblue',
-                                                                                xlabel=None, ylabel=None)
-            scatter *= scatter_unit
-            scatter = scatter.opts(width=500, height=300)
-            import matplotlib.pyplot as plt
-            scatter = hv.plotting.mpl.to_mpl().set_size_inches(8, 8)
-            #
-            # scatter = scatter.options(title='Zero-Pole Plot',
-            #                           width=500,
-            #                           height=300)
+            strm = ax0.plot(theta_unit, r_unit)
 
-            # Muestra el plot
-            self.plot_polar.object = scatter
+            ax0.set_title('Zero-Pole Plot')
+
+            # self.plot_polar = pn.pane.Matplotlib(fig1, dpi=144)
+            self.plot_polar = pn.pane.Matplotlib(fig0)
+            self.plot_polar.visible = True
+            self.plot_polar_column[0] = self.plot_polar
             self.plot_polar_column.visible = True
 
             self.text_hint.value = zeros
-
-
-
-
-
-
