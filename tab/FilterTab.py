@@ -71,7 +71,7 @@ class FilterTab:
         self.radio_scale_widget = pn.widgets.RadioButtonGroup(options=list(gv.yes_no_options.keys()),
                                                               name='Scale',
                                                               visible=False)
-        self.radio_pass_zero_widget.value = list(gv.yes_no_options.keys())[1]
+        self.radio_pass_zero_widget.value = list(gv.yes_no_options.keys())[0]
         self.radio_scale_widget.value = list(gv.yes_no_options.keys())[1]
 
         # Text widgets
