@@ -369,12 +369,12 @@ class FilterTab:
                 gain_values = phase_response_values_dict['Gain']
                 phase_values = phase_response_values_dict['Phase'] * (180 / np.pi)  # In deg
 
-                gain_curve = hv.Curve(((w/np.pi)*fs, gain_values),
+                gain_curve = hv.Curve(((w/(2*np.pi))*fs, gain_values),
                                       'f',
                                       'Gain',
                                       label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
                                                          logx=True, show_grid=True)
-                phase_curve = hv.Curve(((w/np.pi)*fs, phase_values),
+                phase_curve = hv.Curve(((w/(2*np.pi))*fs, phase_values),
                                        'f',
                                        'Phase [º]',
                                        label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
