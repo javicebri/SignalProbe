@@ -27,7 +27,9 @@ class FilterTab:
         frequency_units_list = list(gv.frequency_units_dict.keys())
         self.set_select_ad(ad_list[0])
 
-        # Selector widgets
+        ####################
+        # SELECTOR WIDGETS #
+        ####################
         self.select_ad_widget = pn.widgets.Select(options=ad_list,
                                                   value=ad_list[0],
                                                   name='Type of signal',
@@ -74,7 +76,9 @@ class FilterTab:
         self.radio_pass_zero_widget.value = list(gv.yes_no_options.keys())[0]
         self.radio_scale_widget.value = list(gv.yes_no_options.keys())[1]
 
-        # Text widgets
+        ####################
+        #   TEXT WIDGETS   #
+        ####################
         self.text_hint = pn.widgets.StaticText(name='Hint', value='')
         self.text_f0_gain_value = pn.widgets.StaticText(name='Gain f0', value='', visible=False)
         self.text_fc_gain_value = pn.widgets.StaticText(name='Gain fc', value='', visible=False)
@@ -88,7 +92,9 @@ class FilterTab:
         self.text_pass_zero = pn.widgets.StaticText(name='Pass Zero', value='', visible=False)
         self.text_scale = pn.widgets.StaticText(name='Scale', value='', visible=False)
 
-        # Input widgets
+        ####################
+        #  INPUT WIDGETS   #
+        ####################
         self.input_cutoff_widget = pn.widgets.FloatInput(name='Cutoff frequency',
                                                          value=1.0,
                                                          start=0.1,
@@ -123,7 +129,9 @@ class FilterTab:
         # # Checkbox widgets
         # self.seed_checkbox = pn.widgets.Checkbox(name='As random seed', visible=False, align='end')
 
-        # Button widgets
+        ####################
+        #  BUTTON WIDGETS  #
+        ####################
         self.calculate_button = pn.widgets.Button(name="Calculate", button_type="primary", visible=False)
         self.calculate_button.on_click(self.calculate_filter)
         self.text_hint.value = ''
@@ -136,6 +144,7 @@ class FilterTab:
                                      self.text_fc_phase_value,
                                      visible=False,
                                      styles=dict(background='WhiteSmoke'), width=525)
+
         # Dictionary with all the widgets to make them visible or not
         self.widget_dict = {
             "select_ad_widget": self.select_ad_widget,
@@ -163,9 +172,12 @@ class FilterTab:
             "calculate_button": self.calculate_button,
             "plot_column": self.plot_column
         }
-        # To make them visible or not
+        # Make them visible or not
         self.set_visible_widgets(self.select_filter_widget.value)
 
+        ####################
+        # CONTENT WIDGETS  #
+        ####################
         self.content = pn.Column(pn.Row(
             pn.Column(self.select_ad_widget,
                       self.select_filter_widget,
@@ -265,7 +277,6 @@ class FilterTab:
                             "scale": scale,
                             "fs": fs}
         return object_vars_dict
-
 
     def calculate_filter(self, event):
         """
