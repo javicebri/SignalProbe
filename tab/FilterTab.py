@@ -335,9 +335,9 @@ class FilterTab:
         else:
             w_cutoff = 2 * np.pi * cutoff
 
-        phase_response_0_dict = self.filter_obj.calc_gain_phase_response(np.array([0j]))
-        phase_response_cutoff_dict = self.filter_obj.calc_gain_phase_response(np.array([w_cutoff]))
-        phase_response_values_dict = self.filter_obj.calc_gain_phase_response(values_x)
+        phase_response_0_dict = self.filter_obj.gain_phase_response(np.array([0j]))
+        phase_response_cutoff_dict = self.filter_obj.gain_phase_response(np.array([w_cutoff]))
+        phase_response_values_dict = self.filter_obj.gain_phase_response(values_x)
 
         self.text_f0_gain_value.value = str(round(phase_response_0_dict['Gain'][0], 3))
         self.text_fc_gain_value.value = str(round(phase_response_cutoff_dict['Gain'][0], 3))
@@ -349,7 +349,7 @@ class FilterTab:
         gain_curve = hv.Curve((values_x.imag, gain_values),
                               'f/fc',
                               'Gain',
-                              label='Gain').opts(tools=['hover'], width=gv.bode_width, height=gv.bode_height, title='Bode Plot',
+                              label='Gain').opts(tools=['hover'], width=gv.bode_width, height=gv.bode_height,
                                                  logx=True, show_grid=True)
         phase_curve = hv.Curve((values_x.imag, phase_values),
                                'f/fc',
