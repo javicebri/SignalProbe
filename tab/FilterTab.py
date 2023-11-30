@@ -29,9 +29,7 @@ class FilterTab:
         pn.extension()
 
         fig1 = Figure()
-        ax1 = fig1.subplots()
-        ax1.plot([1, 2, 3], [1, 2, 3])
-        self.plot_polar = pn.pane.Matplotlib(fig1, dpi=144)
+        self.plot_polar = pn.pane.Matplotlib(fig1, dpi=gv.dpi)
 
         ad_list = list(gv.filter_options_dict.keys())
         frequency_units_list = list(gv.frequency_units_dict.keys())
@@ -147,17 +145,19 @@ class FilterTab:
         self.text_hint.value = ''
 
         # Vars
-        self.plot_column = pn.Column(self.normalize_radio_button_group,
+        self.plot_column = pn.Column('# Bode plot',
+                                     self.normalize_radio_button_group,
                                      self.plot_pane,
                                      self.text_f0_gain_value,
                                      self.text_fc_gain_value,
                                      self.text_fc_phase_value,
                                      visible=False,
-                                     styles=dict(background='WhiteSmoke'), width=700)
+                                     width=700)
 
-        self.plot_polar_column = pn.Column(self.plot_polar,
+        self.plot_polar_column = pn.Column('# Zero-Pole plot',
+                                           self.plot_polar,
                                            visible=False,
-                                           styles=dict(background='WhiteSmoke'), width=700)
+                                           width=700)
 
         # Dictionary with all the widgets to make them visible or not
         self.widget_dict = {
@@ -349,12 +349,12 @@ class FilterTab:
         gain_curve = hv.Curve((values_x.imag, gain_values),
                               'f/fc',
                               'Gain',
-                              label='Gain').opts(tools=['hover'], width=500, height=300, title='Bode Plot',
+                              label='Gain').opts(tools=['hover'], width=gv.bode_width, height=gv.bode_height, title='Bode Plot',
                                                  logx=True, show_grid=True)
         phase_curve = hv.Curve((values_x.imag, phase_values),
                                'f/fc',
                                'Phase [º]',
-                               label='Phase').opts(tools=['hover'], width=500, height=300, logx=True,
+                               label='Phase').opts(tools=['hover'], width=gv.bode_width, height=gv.bode_height, logx=True,
                                                    show_grid=True)
         vertical_cutoff_line = hv.VLine(x=1, label='Cutoff freq', ).opts(line_dash='dashed', line_color='black')
 
@@ -409,24 +409,17 @@ class FilterTab:
             gain_values = gain_values[index_f]
             phase_values = phase_values[index_f]
 
-            dpi = 100
-            width_inches = 5
-            height_inches = 3
-
             gain_curve = hv.Curve((f_axis, gain_values),
                                   'f',
                                   'Gain',
                                   label='Gain').opts(tools=['hover'],
-                                                     width=int(width_inches * dpi),
-                                                     height=int(height_inches * dpi),
-                                                     title='Bode Plot',
+                                                     width=640, height=480,
                                                      logx=True, show_grid=True)
             phase_curve = hv.Curve((f_axis, phase_values),
                                    'f',
                                    'Phase [º]',
                                    label='Phase').opts(tools=['hover'],
-                                                       width=int(width_inches * dpi),
-                                                       height=int(height_inches * dpi),
+                                                       width=640, height=480,
                                                        logx=True,
                                                        show_grid=True)
             self.plot_pane.object = gain_curve * phase_curve.opts(hooks=[plot_secondary])
@@ -439,18 +432,15 @@ class FilterTab:
             self.plot_column.visible = True
 
             # ZERO POLE PLOT
-            import matplotlib
 
-            # Configurar el backend de Matplotlib
             plt.switch_backend('agg')
-            # Activar la extensión de Matplotlib en Panel
             pn.extension('matplotlib')
 
             zeros = self.filter_obj.get_zeros()
             poles = self.filter_obj.get_poles()
 
             fig0, ax0 = plt.subplots(subplot_kw={'projection': 'polar'},
-                                     figsize=(width_inches, height_inches), dpi=dpi)
+                                     figsize=(gv.polar_width, gv.polar_height), dpi=gv.dpi)
 
             if len(zeros) > 0:
                 r_zeros = np.abs(zeros)
@@ -466,12 +456,11 @@ class FilterTab:
             r_unit = np.ones(len(theta_unit))
             strm = ax0.plot(theta_unit, r_unit)
 
-            ax0.set_title('Zero-Pole Plot')
+            # ax0.set_title('Zero-Pole Plot')
 
-            # self.plot_polar = pn.pane.Matplotlib(fig1, dpi=144)
             self.plot_polar = pn.pane.Matplotlib(fig0)
             self.plot_polar.visible = True
-            self.plot_polar_column[0] = self.plot_polar
+            self.plot_polar_column[1] = self.plot_polar
             self.plot_polar_column.visible = True
 
             self.text_hint.value = zeros

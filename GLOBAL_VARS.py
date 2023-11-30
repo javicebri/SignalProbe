@@ -1,4 +1,9 @@
 
+dpi = 50
+bode_width = 640
+bode_height = 480
+polar_width = 3
+polar_height = 3.34
 
 tabs_options_list = ["Filter", "Noise", "Choke"]
 
