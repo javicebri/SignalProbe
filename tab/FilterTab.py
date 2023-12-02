@@ -397,13 +397,11 @@ class FilterTab:
             # self.text_fc_phase_value.value = str(round(phase_response_cutoff_dict['Phase'][0] * (180 / np.pi), 3))
 
             # GAIN PHASE PLOT
-
-            gain_values = self.filter_obj.get_gain(log=False)
-            phase_values = self.filter_obj.get_phase(deg=True)  # In deg
+            gain_values = self.filter_obj.gain_values
+            phase_values = self.filter_obj.phase_values  # In deg
 
             # Log axis does not allow values < 0.01
-            # w = self.filter_obj.get_angular_axis()
-            f_axis = self.filter_obj.get_freq_axis()
+            f_axis = self.filter_obj.f_axis
             index_f = np.where(f_axis >= 0.01)[0]
             f_axis = f_axis[index_f]
             gain_values = gain_values[index_f]
@@ -436,8 +434,8 @@ class FilterTab:
             plt.switch_backend('agg')
             pn.extension('matplotlib')
 
-            zeros = self.filter_obj.get_zeros()
-            poles = self.filter_obj.get_poles()
+            zeros = self.filter_obj.zeros
+            poles = self.filter_obj.poles
 
             fig0, ax0 = plt.subplots(subplot_kw={'projection': 'polar'},
                                      figsize=(gv.polar_width, gv.polar_height), dpi=gv.dpi)

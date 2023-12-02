@@ -24,12 +24,14 @@ class FilterCoefficients(ABC):
 
 
 class Filter(FResponse, ZeroPole, ABC):
-    def __init__(self):
-        self._h = None
-        self._f_axis = None
-        self._gain_values = None
-        self._phase_values = None
-        self._zeros = self._poles = self._sys_gain = None
+    def __init__(self, h, f_axis, gain_values, phase_values, zeros, poles, sys_gain):
+        self._h = h
+        self._f_axis = f_axis
+        self._gain_values = gain_values
+        self._phase_values = phase_values
+        self._zeros = zeros
+        self._poles = poles
+        self._sys_gain = sys_gain
 
     @abstractmethod
     def calc_f_response(self):
@@ -71,7 +73,8 @@ class Filter(FResponse, ZeroPole, ABC):
 
 
 class DFilter(Filter, FilterCoefficients, ABC):
-    def __init__(self, fs=None, taps=None):
+    def __init__(self, fs, taps, h, f_axis, gain_values, phase_values, zeros, poles, sys_gain):
+        super().__init__(h, f_axis, gain_values, phase_values, zeros, poles, sys_gain)
         self._fs = fs
         self._taps = taps
 
@@ -79,13 +82,14 @@ class DFilter(Filter, FilterCoefficients, ABC):
     def fs(self):
         return self._fs
 
-    @property
-    def taps(self):
-        return self._taps
-
-
 class FirWin(DFilter):
-    def __init__(self, order, cutoff, pass_zero, width, window, scale):
+    def __init__(self, order, cutoff, pass_zero,
+                 width, window, scale,
+                 fs, taps=None, h=None,
+                 f_axis=None, gain_values=None, phase_values=None,
+                 zeros=None, poles=None, sys_gain=None):
+
+        super().__init__(fs, taps, h, f_axis, gain_values, phase_values, zeros, poles, sys_gain)
         self._order = order
         self._numtaps = order + 1
         self._cutoff = cutoff
@@ -98,6 +102,7 @@ class FirWin(DFilter):
         self.calc_f_response()
         self.calc_gain()
         self.calc_phase()
+        self.calc_zero_pole()
 
     def calc_filter_coefficients(self):
         self._taps = signal.firwin(numtaps=self._numtaps,
@@ -109,11 +114,11 @@ class FirWin(DFilter):
                                    fs=self._fs)
 
     def calc_f_response(self):
-        w, self.gain_values = signal.freqz(self._taps, worN=512)
-        self.f_axis = (w / (2 * np.pi)) * self._fs
+        w, self._h = signal.freqz(self._taps, worN=512)
+        self._f_axis = (w / (2 * np.pi)) * self._fs
 
     def calc_zero_pole(self):
-        self._zeros, self._poles, self._sys_gain = signal.tf2zpk(self.taps, 1)
+        self._zeros, self._poles, self._sys_gain = signal.tf2zpk(self._taps, 1)
 
 
 class AFilter(Filter, ABC):
@@ -128,6 +133,7 @@ class AFilter(Filter, ABC):
         end_point = complex(0, self._cutoff * freq_units * 10)
         init_point = complex(0, 0.10)
         self._s = np.geomspace(init_point, end_point, n_points)
+
 
 class Butterwoth(AFilter):
     def __init__(self, order, target_gain):
@@ -165,7 +171,9 @@ class Chebyshev(AFilter):
         self._target_gain = target_gain
         self._ripple = ripple
 
-
+        self.calc_s_vector()
+        self.calc_gain()
+        self.calc_phase()
 
     def pole_i(self, i, eps, n):
         """
@@ -181,111 +189,26 @@ class Chebyshev(AFilter):
         return complex(sig, omg)
 
     def calc_f_response(self):
-
-        n = int(self.order)
+        n = self._order
+        g_0 = self._target_gain
         r = self.ripple
         eps = np.sqrt(10 ** (r / 10) - 1)
 
-        g_0 = self.gain
-        A_n = 1  # Numer
-        B_n = 1
+        a_n = 1  # Numer
+        b_n = 1
 
         for i in range(1, n + 1):
-            A_n = A_n * (- self.pole_i(i, eps, n))
-            B_n = B_n * (s - self.pole_i(i, eps, n))
+            a_n = a_n * (- self.pole_i(i, eps, n))
+            b_n = b_n * (self._s - self.pole_i(i, eps, n))
 
         if n % 2 == 0:
             # Even
-            A_n = A_n * 10 ** (r / 20)
+            a_n = a_n * 10 ** (r / 20)
 
-        return g_0 * (A_n / B_n)
+        return g_0 * (a_n / b_n)
 
-
-class FirWin(Filter):
-    def __init__(self, object_vars_dict):
-        super().__init__(object_vars_dict)
-        self.numtaps = object_vars_dict["order"] + 1
-        self.pass_zero = bool(object_vars_dict["pass_zero"])
-        self.width = object_vars_dict["width"]
-        self.window = object_vars_dict["window"]
-        self.scale = bool(object_vars_dict["scale"])
-        self.fs = object_vars_dict["fs"]
-        self.taps = self.w = self.h = None  # coefficients, w x axis and filter response
-        self.result_gain = self.result_phase = None
-        self.zeros = self.poles = self.sys_gain = None
-
-        self.__calc_filter_coefficients__()
-        self.__calc_freq_response__()
-        self.__calc_gain_phase_response__()
-        self.__calc_zeros_poles__()
-
-    def type(self):
+    def calc_zero_pole(self):
         pass
-
-    def __calc_filter_coefficients__(self):
-        """
-        Compute coefficients of the filter
-        :return: None
-        """
-        self.taps = signal.firwin(numtaps=self.numtaps,
-                                  cutoff=self.cutoff,
-                                  width=self.width,
-                                  window=self.window,
-                                  pass_zero=self.pass_zero,
-                                  scale=self.scale,
-                                  fs=self.fs)
-
-    def __calc_freq_response__(self):
-        """
-        Calculate frequency response of the filter with filter coefficients
-        :return: None
-        """
-        self.__calc_filter_coefficients__()
-        self.w, self.h = signal.freqz(self.taps, worN=8000)
-
-    def __calc_gain_phase_response__(self):
-        """
-        Calculate gain and phase value of the frequency response
-        :return: None
-        """
-        self.result_gain = np.abs(self.h)
-        self.result_phase = np.unwrap(np.angle(self.h))
-
-    def __calc_zeros_poles__(self):
-        self.zeros, self.poles, self.sys_gain = signal.tf2zpk(self.taps, 1)
-
-    def get_zeros(self):
-        return self.zeros
-
-    def get_poles(self):
-        return self.poles
-
-    def get_sys_gain(self):
-        return self.sys_gain
-
-    def get_gain(self, log=False):
-        if log:
-            return 20 * np.log(self.result_gain)
-        else:
-            return self.result_gain
-
-    def get_phase(self, deg=False):
-        if deg:
-            return self.result_phase * (180 / np.pi)
-        else:
-            return self.result_phase
-
-    def get_filter_coeff(self):
-        return self.taps
-
-    def get_frequency_response(self):
-        return self.h
-
-    def get_w_axis(self):
-        return self.w
-
-    def get_freq_axis(self):
-        return (self.w / (2 * np.pi)) * self.fs
 
 
 def route_filter_class(object_vars_dict):
@@ -295,10 +218,13 @@ def route_filter_class(object_vars_dict):
     :return: object of the selected class
     """
     type_str = object_vars_dict["type_str"]
+
     if type_str == "Butterworth":
-        filter_obj = Butterwoth(object_vars_dict)
+        filter_obj = Butterwoth(**object_vars_dict)
     elif type_str == "Chebyshev":
-        filter_obj = Chebyshev(object_vars_dict)
+        filter_obj = Chebyshev(**object_vars_dict)
     elif type_str == "FIR_Window method (cutoff)":
-        filter_obj = FirWin(object_vars_dict)
+        arg_keys = ['order', 'cutoff', 'width', 'window', 'pass_zero', 'scale', 'fs']
+        filtered_dict = {k: object_vars_dict[k] for k in arg_keys}
+        filter_obj = FirWin(**filtered_dict)
     return filter_obj
